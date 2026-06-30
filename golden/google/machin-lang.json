@@ -1,0 +1,33 @@
+{
+  "search_metadata": {
+    "status": "Success",
+    "engine": "google"
+  },
+  "search_parameters": {
+    "engine": "google",
+    "q": "machin programming language"
+  },
+  "organic_results": [
+    {
+      "position": 1,
+      "title": "machin: a Go-flavored, machine-first language",
+      "link": "https://github.com/javimosch/machin",
+      "displayed_link": "github.com › javimosch › machin",
+      "snippet": "MFL compiles through C to a single native binary. Plain-text source, one declaration per line, type-inferred & machine-first."
+    },
+    {
+      "position": 2,
+      "title": "Show HN: Machin, a tiny language that compiles to one binary",
+      "link": "https://news.ycombinator.com/item?id=42001337",
+      "displayed_link": "news.ycombinator.com",
+      "snippet": "A small \"machine-first\" language with no runtime — discussion and benchmarks vs Go and Rust."
+    },
+    {
+      "position": 3,
+      "title": "Machin (programming language) - Wikipedia",
+      "link": "https://en.wikipedia.org/wiki/Machin_(programming_language)",
+      "displayed_link": "en.wikipedia.org › wiki › Machin",
+      "snippet": "Machin is a statically typed language developed by Javier Mosch. It transpiles to C and produces a single static binary."
+    }
+  ]
+}

@@ -26,10 +26,18 @@ Fetch (proxies, browsers, API keys) is decoupled and swappable — see
 
 ## Status
 
-Early scaffold. First engine: **`google_maps`** (raw record array → SerpApi
-`local_results[]`). Roadmap: Google organic (an HTML tokenizer in MFL), a small
-CSS-selector engine so engines become declarative, a server mode
-(`GET /search?...` mapping `engine → fetcher`), and a SQLite result cache.
+Early but real. Two engines:
+
+- **`google`** — rendered SERP **HTML** → SerpApi `organic_results[]`. A small
+  HTML tokenizer in MFL that anchors on *structure* (each result is an `<h3>`
+  wrapped by an external `<a href>`, with `<cite>` + snippet), so it survives
+  Google's randomized class names. Decodes `/url?q=` redirects, unescapes HTML
+  entities, filters People-Also-Ask / internal links.
+- **`google_maps`** — raw record array → SerpApi `local_results[]`.
+
+Roadmap: a small CSS-selector engine so engines become declarative (selector
+tables, no MFL), a server mode (`GET /search?...` mapping `engine → fetcher`),
+and a SQLite result cache.
 
 ## Quick start
 
@@ -38,6 +46,7 @@ CSS-selector engine so engines become declarative, a server mode
 MACHIN=~/ai/machin/machin ./build.sh   # against a local machin
 
 # parse saved raw bytes (offline, no fetcher needed)
+./open-serpapi parse --engine google      < fixtures/google/machin-lang.raw.html
 ./open-serpapi parse --engine google_maps < fixtures/google_maps/coworking-annecy.raw.json
 
 # end-to-end with a live fetcher plugin

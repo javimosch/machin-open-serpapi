@@ -10,9 +10,9 @@ set -euo pipefail
 cd "$(dirname "$0")"
 [ -x ./open-serpapi ] || ./build.sh
 pass=0; fail=0
-for raw in fixtures/*/*.raw.json; do
+for raw in fixtures/*/*.raw.*; do
   engine=$(basename "$(dirname "$raw")")
-  name=$(basename "$raw" .raw.json)
+  name=$(basename "$raw"); name=${name%.raw.*}
   golden="golden/$engine/$name.json"
   got=$(./open-serpapi parse --engine "$engine" < "$raw")
   if diff <(jq -S . "$golden") <(printf '%s' "$got" | jq -S .) >/dev/null 2>&1; then

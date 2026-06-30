@@ -22,12 +22,30 @@ proxy-backed crawler, or a cached file. Swap fetchers without touching the parse
 
 ## What each engine's parser expects on stdin
 
+- **`google`** → rendered SERP **HTML**. The parser anchors on structure (each
+  organic result is an `<h3>` wrapped by an external `<a href>`, with `<cite>`
+  + a `VwiC3b` snippet block), so it tolerates Google's randomized class names.
+  Emits `organic_results[]`. See `../fixtures/google/`.
 - **`google_maps`** → the raw record array a Maps scraper emits, objects shaped
   `{name, rating, reviews_count, address, website, phone, type, query}`.
   Missing fields become `null` in the output. See `../fixtures/google_maps/`.
 
 ## Included
 
+- **`google-search.js`** — Puppeteer fetcher for `engine=google`: renders the
+  SERP and dumps HTML. Run it with the browser install under `~/ai`:
+  ```bash
+  NODE_PATH=~/ai/google-maps-scraper/node_modules \
+  PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome \
+  node fetchers/google-search.js "machin programming language" \
+    | ./open-serpapi parse --engine google
+  ```
 - **`google-maps.sh`** — wraps the existing Puppeteer Maps scraper under `~/ai`
   as a live smoke-test fetcher. Override the path with `MAPS_SCRAPER=...`.
-  Use saved fixtures (not this) for CI — they're deterministic and offline.
+
+> **The layer-1 reality:** fetching Google from a datacenter IP gets a CAPTCHA /
+> "unusual traffic" wall — that's the proxy/anti-bot arms race open-serpapi
+> deliberately does **not** fight. A real deployment pairs the parser with a
+> fetcher that gets through (residential proxy, your own logged-in browser
+> session, a paid fetch API). The **parser** is what this project owns, and it's
+> tested offline against saved fixtures regardless of how you fetch.

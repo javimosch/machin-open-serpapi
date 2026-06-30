@@ -22,7 +22,8 @@ func usage() {
     println("  help    show this")
     println("")
     println("engines:")
-    println("  google_maps   raw record array -> local_results[]")
+    println("  google        rendered SERP HTML -> organic_results[]")
+    println("  google_maps   raw record array   -> local_results[]")
 }
 
 // get_flag returns the value following `name` in argv, or "" if absent.
@@ -88,6 +89,246 @@ func parse_maps(raw, q) (out) {
         "\"local_results\":[" + items + "]}"
 }
 
+// ─────────────────────────────────────────────────────────────────────────
+// engine: google (organic results) — a small HTML tokenizer + extractor.
+// Google's SERP HTML has randomized class names, so we anchor on STRUCTURE:
+// every organic result is an <h3> title wrapped by an <a href> to an external
+// URL, with a <cite> display link and a snippet block nearby. Non-organic h3s
+// (People-Also-Ask, internal nav) are filtered because their link isn't external.
+// ─────────────────────────────────────────────────────────────────────────
+
+// idx_from: absolute index of `sub` in `s` at/after `from`, or -1.
+func idx_from(s, sub, from) (p) {
+    p = -1
+    n := len(s)
+    start := from
+    if start < 0 { start = 0 }
+    if start > n { return }
+    r := index(substr(s, start, n), sub)
+    if r < 0 { return }
+    p = start + r
+}
+
+func starts(s, pre) (b) {
+    b = false
+    if len(pre) > len(s) { return }
+    b = substr(s, 0, len(pre)) == pre
+}
+
+func ends(s, suf) (b) {
+    b = false
+    if len(suf) > len(s) { return }
+    b = substr(s, len(s) - len(suf), len(s)) == suf
+}
+
+// strip_tags removes every <...> span, leaving text content.
+func strip_tags(s) (out) {
+    out = ""
+    n := len(s)
+    i := 0
+    for i < n {
+        c := substr(s, i, i+1)
+        if c == "<" {
+            e := idx_from(s, ">", i)
+            if e < 0 { i = n } else { i = e + 1 }
+        } else {
+            out = out + c
+            i = i + 1
+        }
+    }
+}
+
+// unescape decodes the handful of HTML entities SERPs actually use (&amp; last).
+func unescape(s) (o) {
+    o = replace(s, "&quot;", "\"")
+    o = replace(o, "&#39;", "'")
+    o = replace(o, "&apos;", "'")
+    o = replace(o, "&mdash;", "—")
+    o = replace(o, "&ndash;", "–")
+    o = replace(o, "&nbsp;", " ")
+    o = replace(o, "&lt;", "<")
+    o = replace(o, "&gt;", ">")
+    o = replace(o, "&amp;", "&")
+}
+
+// collapse_ws folds all whitespace runs to single spaces and trims.
+func collapse_ws(s) (o) {
+    o = replace(s, "\n", " ")
+    o = replace(o, "\t", " ")
+    o = replace(o, "\r", " ")
+    prev := ""
+    for o != prev {
+        prev = o
+        o = replace(o, "  ", " ")
+    }
+    o = trim(o)
+}
+
+func clean_text(s) (o) { o = collapse_ws(unescape(strip_tags(s))) }
+
+// jesc escapes a plain-text string for embedding in JSON (UTF-8 stays raw).
+func jesc(s) (o) {
+    o = replace(s, "\\", "\\\\")
+    o = replace(o, "\"", "\\\"")
+}
+
+// tag_inner: given the index of `<tag`, return its cleaned inner text and the
+// position just past `</tag>`.
+func tag_inner(html, openStart, tag) (text, after) {
+    text = ""
+    after = openStart + 1
+    gt := idx_from(html, ">", openStart)
+    if gt < 0 { return }
+    closeTag := "</" + tag + ">"
+    c := idx_from(html, closeTag, gt)
+    if c < 0 { return }
+    text = clean_text(substr(html, gt + 1, c))
+    after = c + len(closeTag)
+}
+
+// attr_val pulls name="..." out of a single open-tag string.
+func attr_val(tag, name) (v) {
+    v = ""
+    key := name + "=\""
+    p := index(tag, key)
+    if p < 0 { return }
+    rest := substr(tag, p + len(key), len(tag))
+    e := index(rest, "\"")
+    if e < 0 { return }
+    v = substr(rest, 0, e)
+}
+
+func host_of(url) (h) {
+    h = url
+    p := index(h, "://")
+    if p >= 0 { h = substr(h, p + 3, len(h)) }
+    s := index(h, "/")
+    if s >= 0 { h = substr(h, 0, s) }
+}
+
+// normalize resolves an href to a clean external URL ("" if not one):
+// Google /url?q=… redirects are decoded; absolute http(s) pass through.
+func normalize(href) (url) {
+    url = ""
+    if starts(href, "/url?q=") {
+        rest := substr(href, 7, len(href))
+        e := index(rest, "&")
+        if e < 0 { e = len(rest) }
+        url = url_decode(substr(rest, 0, e))
+        return
+    }
+    if starts(href, "https://") { url = href; return }
+    if starts(href, "http://") { url = href; return }
+}
+
+func is_external(url) (b) {
+    b = false
+    if len(url) == 0 { return }
+    h := host_of(url)
+    if contains(h, "google.") { return }
+    if contains(h, "gstatic.") { return }
+    b = true
+}
+
+// nearest_link returns the href of the last <a ...> opened before position h
+// (the anchor wrapping the result's <h3>).
+func nearest_link(html, h) (href) {
+    href = ""
+    pos := 0
+    for {
+        a := idx_from(html, "<a ", pos)
+        if a < 0 { break }
+        if a >= h { break }
+        gt := idx_from(html, ">", a)
+        if gt < 0 { break }
+        tag := substr(html, a, gt + 1)
+        hv := attr_val(tag, "href")
+        if len(hv) > 0 { href = hv }
+        pos = gt + 1
+    }
+}
+
+// disp_link: cleaned <cite> text between `from` and `limit`, else "".
+func disp_link(html, from, limit) (d) {
+    d = ""
+    c := idx_from(html, "<cite", from)
+    if c < 0 { return }
+    if c >= limit { return }
+    gt := idx_from(html, ">", c)
+    if gt < 0 { return }
+    e := idx_from(html, "</cite>", gt)
+    if e < 0 { return }
+    d = clean_text(substr(html, gt + 1, e))
+}
+
+// snippet: cleaned text of the first VwiC3b block between `from` and `limit`.
+func snippet(html, from, limit) (s) {
+    s = ""
+    m := idx_from(html, "VwiC3b", from)
+    if m < 0 { return }
+    if m >= limit { return }
+    gt := idx_from(html, ">", m)
+    if gt < 0 { return }
+    e := idx_from(html, "</div>", gt)
+    if e < 0 { return }
+    s = clean_text(substr(html, gt + 1, e))
+}
+
+// query_from recovers the query from the <title> ("<q> - Google Search").
+func query_from(html) (q) {
+    q = ""
+    t := idx_from(html, "<title>", 0)
+    if t < 0 { return }
+    e := idx_from(html, "</title>", t)
+    if e < 0 { return }
+    raw := clean_text(substr(html, t + 7, e))
+    suf := " - Google Search"
+    if ends(raw, suf) { raw = substr(raw, 0, len(raw) - len(suf)) }
+    q = raw
+}
+
+func parse_google(html, q) (out) {
+    qv := q
+    if len(qv) == 0 { qv = query_from(html) }
+
+    results := ""
+    count := 0
+    pos := 0
+    for {
+        h := idx_from(html, "<h3", pos)
+        if h < 0 { break }
+        title, afterH3 := tag_inner(html, h, "h3")
+        pos = afterH3
+
+        url := normalize(nearest_link(html, h))
+        ok := true
+        if len(url) == 0 { ok = false }
+        if ok { if is_external(url) == false { ok = false } }
+        if ok { if len(title) == 0 { ok = false } }
+
+        if ok {
+            nb := idx_from(html, "<h3", afterH3)
+            limit := len(html)
+            if nb >= 0 { limit = nb }
+            disp := disp_link(html, h, limit)
+            if len(disp) == 0 { disp = host_of(url) }
+            snip := snippet(html, afterH3, limit)
+            count = count + 1
+            rec := "{\"position\":" + str(count) +
+                ",\"title\":\"" + jesc(title) + "\"" +
+                ",\"link\":\"" + jesc(url) + "\"" +
+                ",\"displayed_link\":\"" + jesc(disp) + "\"" +
+                ",\"snippet\":\"" + jesc(snip) + "\"}"
+            if count > 1 { results = results + "," }
+            results = results + rec
+        }
+    }
+
+    out = "{\"search_metadata\":{\"status\":\"Success\",\"engine\":\"google\"}," +
+        "\"search_parameters\":{\"engine\":\"google\",\"q\":\"" + jesc(qv) + "\"}," +
+        "\"organic_results\":[" + results + "]}"
+}
+
 func main() {
     a := args()
     if len(a) < 2 {
@@ -111,12 +352,10 @@ func main() {
 
     engine := get_flag(a, "--engine")
     if engine == "" { engine = "google_maps" }
-    if engine != "google_maps" {
-        println("{\"error\":\"engine not supported yet: " + engine + "\"}")
-        return
-    }
 
     raw := read_stdin()
     q := get_flag(a, "--query")
-    println(parse_maps(raw, q))
+    if engine == "google_maps" { println(parse_maps(raw, q)); return }
+    if engine == "google" { println(parse_google(raw, q)); return }
+    println("{\"error\":\"engine not supported yet: " + engine + "\"}")
 }
