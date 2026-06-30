@@ -49,14 +49,17 @@ Early but real. Seven engines:
   Startpage knowledge panel) whose identity field is empty. Adding a clean-markup
   engine is a JSON file, not code.
 
-- **`linkedin`** — **authed** LinkedIn HTML → `posts[]` (`author`, `author_url`,
-  `author_type` person/company, `text`, `hashtags`, `comments[]`). LinkedIn ships
-  fully obfuscated class names, so this bespoke engine anchors on stable
-  **attributes** (`aria-label="Open control menu for post by …"`,
-  `data-testid="expandable-text-box"`). Verified on real logged-in HTML. Needs
-  your `li_at` session cookie (see [`fetchers/`](fetchers/README.md)) — **scraping
-  logged-in LinkedIn violates their ToS and risks your account; personal,
-  low-volume use only.** Posts work today; comment extraction is next.
+- **`linkedin`** — **authed** LinkedIn HTML → `posts[]` with nested `comments[]`.
+  Two page shapes, auto-detected: content-**search** (obfuscated classes → anchor
+  on stable *attributes* like `aria-label="Open control menu for post by …"`) and
+  post-**detail** (classic semantic classes → `update-components-text`, and each
+  comment via `comments-comment-meta__description-title` + `__main-content`).
+  Each post: `author`, `author_url`, `author_type`, `text`, `hashtags`; each
+  comment: `author`, `author_url`, `headline`, `text`. Verified on real logged-in
+  HTML — 18/18 comments. Best driven by **attaching to your own browser over CDP**
+  (see [`fetchers/`](fetchers/README.md)); li_at-cookie injection works for search
+  but the comment pages need the real session. **Scraping logged-in LinkedIn
+  violates their ToS and risks your account; personal, low-volume use only.**
 
 Fetch is solved at the agent-first level too: `fetchers/google.sh` drives the
 Botasaurus anti-detect browser and **bypasses Google's CAPTCHA wall** (verified

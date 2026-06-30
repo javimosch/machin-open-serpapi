@@ -1,0 +1,40 @@
+{
+  "search_metadata": {
+    "status": "Success",
+    "engine": "linkedin"
+  },
+  "search_parameters": {
+    "engine": "linkedin",
+    "q": ""
+  },
+  "posts": [
+    {
+      "position": 1,
+      "author": "Jane Doe",
+      "author_url": "https://www.linkedin.com/in/jane-doe-123/",
+      "author_type": "person",
+      "text": "We open-sourced our infra tooling. Self-hosting beats SaaS lock-in for SMEs. #DevOps #SelfHosting",
+      "hashtags": [
+        "DevOps",
+        "SelfHosting"
+      ],
+      "comment_count": 2,
+      "comments": [
+        {
+          "author": "Alex Smith",
+          "author_url": "https://www.linkedin.com/in/alex-smith-9/",
+          "author_type": "person",
+          "headline": "Platform Engineer at Acme",
+          "text": "Great move — staff augmentation + infra automation is exactly what small teams need. #DevOps"
+        },
+        {
+          "author": "Marie R",
+          "author_url": "https://www.linkedin.com/in/marie-r/",
+          "author_type": "person",
+          "headline": "Fractional CTO",
+          "text": "Couldn't agree more — a senior architect on tap is the unlock."
+        }
+      ]
+    }
+  ]
+}

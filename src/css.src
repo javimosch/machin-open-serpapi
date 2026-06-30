@@ -419,7 +419,125 @@ func hashtags_json(text) (out) {
     out = out + "]"
 }
 
+// clean_actor strips an actor name: cut at the "•" degree/badge separator and
+// undo LinkedIn's doubled a11y spans ("Ada LovelaceAda Lovelace" -> "Ada Lovelace").
+func clean_actor(s) (o) {
+    o = s
+    p := index(o, "•")
+    if p >= 0 { o = trim(substr(o, 0, p)) }
+    L := len(o)
+    if L > 6 {
+        if L % 2 == 0 {
+            half := L / 2
+            if substr(o, 0, half) == substr(o, half, L) { o = substr(o, 0, half) }
+        }
+    }
+}
+
+// sel_text: cleaned inner text of the first match of `selstr` within `root`.
+func sel_text(html, nodes, root, selstr) (t) {
+    t = ""
+    hits := select_in(html, nodes, root, parse_selector(selstr))
+    if len(hits) > 0 { t = node_text(html, nodes, hits[0]) }
+}
+
+// profile_link: first <a> to /in/ or /company/ within `root` (its url + type).
+func profile_link(html, nodes, root) (url, atype) {
+    url = ""
+    atype = ""
+    rs := 0
+    re := len(html)
+    if root >= 0 { rs = nodes[root].cstart; re = nodes[root].cend }
+    i := 0
+    nN := len(nodes)
+    for i < nN {
+        if nodes[i].cstart >= rs {
+            if nodes[i].cstart <= re {
+                if nodes[i].tag == "a" {
+                    h := get_attr(nodes[i].attr, "href")
+                    if contains(h, "/in/") { url = h; atype = "person"; return }
+                    if contains(h, "/company/") { url = h; atype = "company"; return }
+                }
+            }
+        }
+        i = i + 1
+    }
+}
+
+// nearest_profile_before: first <a> to /in/ or /company/ at/before node `idx`
+// (a comment's author link sits just before its name in the DOM).
+func nearest_profile_before(html, nodes, idx) (url, atype) {
+    url = ""
+    atype = ""
+    k := idx
+    lim := idx - 60
+    if lim < 0 { lim = 0 }
+    for k >= lim {
+        if nodes[k].tag == "a" {
+            h := get_attr(nodes[k].attr, "href")
+            if contains(h, "/in/") { url = h; atype = "person"; return }
+            if contains(h, "/company/") { url = h; atype = "company"; return }
+        }
+        k = k - 1
+    }
+}
+
+// parse_linkedin_detail handles a post-DETAIL page (classic semantic classes):
+// the main post + its loaded comments. Comments (incl. replies) are paired by
+// document order across the author-title and main-content lists (both 1:1).
+func parse_linkedin_detail(html, q) (out) {
+    nodes := parse_dom(html)
+
+    postAuthor := clean_actor(sel_text(html, nodes, -1, ".update-components-actor__title"))
+    postText := sel_text(html, nodes, -1, ".update-components-text")
+    paurl, patype := profile_link(html, nodes, -1)
+
+    authors := select_in(html, nodes, -1, parse_selector(".comments-comment-meta__description-title"))
+    texts := select_in(html, nodes, -1, parse_selector(".comments-comment-item__main-content"))
+    subs := select_in(html, nodes, -1, parse_selector(".comments-comment-meta__description-subtitle"))
+
+    comments := ""
+    cc := 0
+    ci := 0
+    for ci < len(authors) {
+        ca := clean_actor(node_text(html, nodes, authors[ci]))
+        ct := ""
+        if ci < len(texts) { ct = node_text(html, nodes, texts[ci]) }
+        ch := ""
+        if ci < len(subs) { ch = node_text(html, nodes, subs[ci]) }
+        cu, cty := nearest_profile_before(html, nodes, authors[ci])
+        if len(ca) > 0 {
+            rec := "{\"author\":\"" + jesc(ca) + "\"" +
+                ",\"author_url\":\"" + jesc(cu) + "\"" +
+                ",\"author_type\":\"" + jesc(cty) + "\"" +
+                ",\"headline\":\"" + jesc(ch) + "\"" +
+                ",\"text\":\"" + jesc(ct) + "\"}"
+            if cc > 0 { comments = comments + "," }
+            comments = comments + rec
+            cc = cc + 1
+        }
+        ci = ci + 1
+    }
+
+    post := "{\"position\":1" +
+        ",\"author\":\"" + jesc(postAuthor) + "\"" +
+        ",\"author_url\":\"" + jesc(paurl) + "\"" +
+        ",\"author_type\":\"" + jesc(patype) + "\"" +
+        ",\"text\":\"" + jesc(postText) + "\"" +
+        ",\"hashtags\":" + hashtags_json(postText) +
+        ",\"comment_count\":" + str(cc) +
+        ",\"comments\":[" + comments + "]}"
+    out = "{\"search_metadata\":{\"status\":\"Success\",\"engine\":\"linkedin\"}," +
+        "\"search_parameters\":{\"engine\":\"linkedin\",\"q\":\"" + jesc(q) + "\"}," +
+        "\"posts\":[" + post + "]}"
+}
+
 func parse_linkedin(html, q) (out) {
+    // Post-detail pages use classic semantic classes (with loaded comments);
+    // content-search/feed use obfuscated classes (posts only).
+    if contains(html, "comments-comment-entity") { out = parse_linkedin_detail(html, q); return }
+    if contains(html, "update-components-text") { out = parse_linkedin_detail(html, q); return }
+
     nodes := parse_dom(html)
     n := len(nodes)
     pre := "Open control menu for post by "

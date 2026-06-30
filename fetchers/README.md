@@ -35,25 +35,37 @@ proxy-backed crawler, or a cached file. Swap fetchers without touching the parse
 
 ## LinkedIn (authed) — `linkedin.sh`
 
-The `linkedin` engine parses **logged-in** LinkedIn HTML into `posts[]`. The
-fetcher renders it with **your** `li_at` session cookie, scrolling + expanding
-"see more"/comment threads, then dumps HTML:
+The `linkedin` engine parses **logged-in** LinkedIn HTML into `posts[]` (with
+nested `comments[]`). `linkedin.sh` auto-picks a backend:
+
+**A. Attach to your own browser over CDP (recommended).** Full valid session +
+real fingerprint, so LinkedIn trusts it — no 429, no redirect loops, no
+PerimeterX. The comment-bearing post/feed pages only work this way.
 
 ```bash
-# cookie (full session token — treat like a password, never committed):
-mkdir -p ~/.config/intrane-gtm && printf '%s' '<li_at>' > ~/.config/intrane-gtm/li_at && chmod 600 ~/.config/intrane-gtm/li_at
-# or:  export LI_AT='<li_at>'
-
+# 1. launch your browser with a debug port (keeps your profile/session + tabs):
+microsoft-edge --remote-debugging-port=9222 --profile-directory=Default --restore-last-session &
+# 2. fetch (linkedin.sh detects localhost:9222 and uses it):
 ./fetchers/linkedin.sh content "staff augmentation Grenoble" | ./open-serpapi parse --engine linkedin
 ./fetchers/linkedin.sh url "https://www.linkedin.com/feed/update/<urn>/" | ./open-serpapi parse --engine linkedin
+# 3. or capture a post you've ALREADY opened + scrolled (comments loaded):
+./fetchers/linkedin.sh grab | ./open-serpapi parse --engine linkedin
+```
+
+**B. Standalone with a li_at cookie (fallback).** Works for content-search
+(posts), but the comment pages hit anti-bot. Set the cookie (a full session
+token — treat like a password):
+
+```bash
+mkdir -p ~/.config/intrane-gtm && printf '%s' '<li_at>' > ~/.config/intrane-gtm/li_at && chmod 600 ~/.config/intrane-gtm/li_at
 ```
 
 > ⚠️ **ToS / account risk.** Scraping logged-in LinkedIn violates their User
-> Agreement and can get your account restricted; LinkedIn also rate-limits hard
+> Agreement and can get your account restricted; it also rate-limits hard
 > (HTTP 429) — keep it **personal and low-volume**. The cookie is read only from
-> `$LI_AT` or `~/.config/intrane-gtm/li_at` (outside any repo) and is never
-> printed or committed. Don't commit rendered authed HTML either (it carries your
-> session/identity) — fixtures here are synthetic.
+> `$LI_AT` or `~/.config/intrane-gtm/li_at` (outside any repo); never printed or
+> committed. **Don't commit rendered authed HTML either** (it carries your
+> session + real people's data) — the fixtures here are synthetic.
 
 ## Included
 
