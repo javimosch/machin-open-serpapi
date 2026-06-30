@@ -1,0 +1,38 @@
+{
+  "search_metadata": {
+    "status": "Success",
+    "engine": "linkedin"
+  },
+  "search_parameters": {
+    "engine": "linkedin",
+    "q": ""
+  },
+  "posts": [
+    {
+      "position": 1,
+      "author": "Acme Soft",
+      "author_url": "https://www.linkedin.com/company/acme-soft/",
+      "author_type": "company",
+      "text": "We help SMEs ship faster with staff augmentation & DevOps. The skills gap is real. #StaffAugmentation #DevOps #Grenoble",
+      "hashtags": [
+        "StaffAugmentation",
+        "DevOps",
+        "Grenoble"
+      ],
+      "comments": []
+    },
+    {
+      "position": 2,
+      "author": "Marie Dupont",
+      "author_url": "https://www.linkedin.com/in/marie-dupont-1234/",
+      "author_type": "person",
+      "text": "Hiring a full-time senior architect is hard for a 10-person team. Here's why a fractional CTO works. #CTO #Hiring #Startup",
+      "hashtags": [
+        "CTO",
+        "Hiring",
+        "Startup"
+      ],
+      "comments": []
+    }
+  ]
+}

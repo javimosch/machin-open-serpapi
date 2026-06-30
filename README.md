@@ -26,7 +26,7 @@ Fetch (proxies, browsers, API keys) is decoupled and swappable — see
 
 ## Status
 
-Early but real. Six engines:
+Early but real. Seven engines:
 
 - **`google`** — rendered SERP **HTML** → `organic_results[]` (`position`,
   `title`, `link`, `displayed_link`, `snippet`). A small HTML tokenizer in MFL
@@ -48,6 +48,15 @@ Early but real. Six engines:
   are decoded to real URLs, and the runner skips non-result blocks (e.g. a
   Startpage knowledge panel) whose identity field is empty. Adding a clean-markup
   engine is a JSON file, not code.
+
+- **`linkedin`** — **authed** LinkedIn HTML → `posts[]` (`author`, `author_url`,
+  `author_type` person/company, `text`, `hashtags`, `comments[]`). LinkedIn ships
+  fully obfuscated class names, so this bespoke engine anchors on stable
+  **attributes** (`aria-label="Open control menu for post by …"`,
+  `data-testid="expandable-text-box"`). Verified on real logged-in HTML. Needs
+  your `li_at` session cookie (see [`fetchers/`](fetchers/README.md)) — **scraping
+  logged-in LinkedIn violates their ToS and risks your account; personal,
+  low-volume use only.** Posts work today; comment extraction is next.
 
 Fetch is solved at the agent-first level too: `fetchers/google.sh` drives the
 Botasaurus anti-detect browser and **bypasses Google's CAPTCHA wall** (verified

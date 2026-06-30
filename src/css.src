@@ -380,6 +380,99 @@ func extract_field(html, nodes, cont, sel, get, trans) (val) {
     val = apply_transform(val, trans)
 }
 
+// ─────────────────────────────────────────────────────────────────────────
+// engine: linkedin — authed LinkedIn HTML (feed / content search) -> posts[].
+// LinkedIn ships fully obfuscated/hashed class names, so we anchor on STABLE
+// ATTRIBUTES: each post is marked by aria-label="Open control menu for post by
+// <AUTHOR>", its body is the next data-testid="expandable-text-box", and the
+// author profile is the nearest /in/ or /company/ link. Comments live on the
+// post-detail page and fill comments[] there (empty on search/feed).
+// ─────────────────────────────────────────────────────────────────────────
+
+func is_word_char(c) (b) {
+    b = contains("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_", c)
+}
+
+// hashtags_json scans text for #tags and returns a JSON array.
+func hashtags_json(text) (out) {
+    out = "["
+    n := len(text)
+    i := 0
+    cnt := 0
+    for i < n {
+        if substr(text, i, i+1) == "#" {
+            j := i + 1
+            tag := ""
+            for j < n {
+                if is_word_char(substr(text, j, j+1)) { tag = tag + substr(text, j, j+1); j = j + 1 } else { break }
+            }
+            if len(tag) > 0 {
+                if cnt > 0 { out = out + "," }
+                out = out + "\"" + jesc(tag) + "\""
+                cnt = cnt + 1
+            }
+            i = j
+        } else {
+            i = i + 1
+        }
+    }
+    out = out + "]"
+}
+
+func parse_linkedin(html, q) (out) {
+    nodes := parse_dom(html)
+    n := len(nodes)
+    pre := "Open control menu for post by "
+    posts := ""
+    count := 0
+    i := 0
+    for i < n {
+        al := get_attr(nodes[i].attr, "aria-label")
+        if starts(al, pre) {
+            author := substr(al, len(pre), len(al))
+
+            // post body: next expandable-text-box, stopping at the next post
+            text := ""
+            j := i + 1
+            for j < n {
+                if contains(nodes[j].attr, "expandable-text-box") { text = node_text(html, nodes, j); break }
+                if starts(get_attr(nodes[j].attr, "aria-label"), pre) { break }
+                j = j + 1
+            }
+
+            // author profile: nearest /in/ or /company/ link before the menu
+            aurl := ""
+            atype := ""
+            k := i
+            lim := i - 140
+            if lim < 0 { lim = 0 }
+            for k >= lim {
+                if nodes[k].tag == "a" {
+                    h := get_attr(nodes[k].attr, "href")
+                    if contains(h, "/in/") { aurl = h; atype = "person"; break }
+                    if contains(h, "/company/") { aurl = h; atype = "company"; break }
+                }
+                k = k - 1
+            }
+
+            count = count + 1
+            rec := "{\"position\":" + str(count) +
+                ",\"author\":\"" + jesc(author) + "\"" +
+                ",\"author_url\":\"" + jesc(aurl) + "\"" +
+                ",\"author_type\":\"" + jesc(atype) + "\"" +
+                ",\"text\":\"" + jesc(text) + "\"" +
+                ",\"hashtags\":" + hashtags_json(text) +
+                ",\"comments\":[]}"
+            if count > 1 { posts = posts + "," }
+            posts = posts + rec
+        }
+        i = i + 1
+    }
+    out = "{\"search_metadata\":{\"status\":\"Success\",\"engine\":\"linkedin\"}," +
+        "\"search_parameters\":{\"engine\":\"linkedin\",\"q\":\"" + jesc(q) + "\"}," +
+        "\"posts\":[" + posts + "]}"
+}
+
 // run_engine applies a JSON selector spec over the rendered HTML.
 func run_engine(html, spec, q) (out) {
     nodes := parse_dom(html)
