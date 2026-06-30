@@ -248,17 +248,25 @@ func nearest_link(html, h) (href) {
     }
 }
 
-// disp_link: cleaned <cite> text between `from` and `limit`, else "".
-func disp_link(html, from, limit) (d) {
+// disp_link: the <cite> breadcrumb that actually belongs to this result, i.e.
+// the first <cite> (between `from` and `limit`) whose text contains `host`.
+// Some result types (Quora, Medium) only carry metadata cites ("4 months ago")
+// with no URL cite — those don't match host, so the caller falls back to host.
+func disp_link(html, from, limit, host) (d) {
     d = ""
-    c := idx_from(html, "<cite", from)
-    if c < 0 { return }
-    if c >= limit { return }
-    gt := idx_from(html, ">", c)
-    if gt < 0 { return }
-    e := idx_from(html, "</cite>", gt)
-    if e < 0 { return }
-    d = clean_text(substr(html, gt + 1, e))
+    pos := from
+    for {
+        c := idx_from(html, "<cite", pos)
+        if c < 0 { return }
+        if c >= limit { return }
+        gt := idx_from(html, ">", c)
+        if gt < 0 { return }
+        e := idx_from(html, "</cite>", gt)
+        if e < 0 { return }
+        txt := clean_text(substr(html, gt + 1, e))
+        pos = e + 7
+        if contains(txt, host) { d = txt; return }
+    }
 }
 
 // snippet: cleaned text of the first VwiC3b block between `from` and `limit`.
@@ -310,8 +318,12 @@ func parse_google(html, q) (out) {
             nb := idx_from(html, "<h3", afterH3)
             limit := len(html)
             if nb >= 0 { limit = nb }
-            disp := disp_link(html, h, limit)
-            if len(disp) == 0 { disp = host_of(url) }
+            // match cites on the bare host (no leading www.) so breadcrumbs
+            // like "mastercam.com › …" still match www.mastercam.com.
+            hst := host_of(url)
+            if starts(hst, "www.") { hst = substr(hst, 4, len(hst)) }
+            disp := disp_link(html, h, limit, hst)
+            if len(disp) == 0 { disp = hst }
             snip := snippet(html, afterH3, limit)
             count = count + 1
             rec := "{\"position\":" + str(count) +

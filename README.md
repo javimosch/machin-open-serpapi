@@ -28,20 +28,29 @@ Fetch (proxies, browsers, API keys) is decoupled and swappable — see
 
 Early but real. Two engines:
 
-- **`google`** — rendered SERP **HTML** → SerpApi `organic_results[]`. A small
-  HTML tokenizer in MFL that anchors on *structure* (each result is an `<h3>`
-  wrapped by an external `<a href>`, with `<cite>` + snippet), so it survives
-  Google's randomized class names. Decodes `/url?q=` redirects, unescapes HTML
-  entities, filters People-Also-Ask / internal links.
+- **`google`** — rendered SERP **HTML** → `organic_results[]` (`position`,
+  `title`, `link`, `displayed_link`, `snippet`). A small HTML tokenizer in MFL
+  that anchors on *structure* (each result is an `<h3>` wrapped by an external
+  `<a href>`, with `<cite>` + snippet), so it survives Google's randomized class
+  names. Decodes `/url?q=` redirects, unescapes HTML entities, filters
+  People-Also-Ask / internal links. `displayed_link` is hardened against
+  real-HTML variety: it picks the `<cite>` that matches the result's host and
+  falls back to the bare domain for result types (Quora, Medium) whose only
+  cites are metadata ("4 months ago"). Verified on live SERP HTML — 12/12
+  results with correct links + display links.
 - **`google_maps`** — raw record array → SerpApi `local_results[]`.
 
 Fetch is solved at the agent-first level too: `fetchers/google.sh` drives the
 Botasaurus anti-detect browser and **bypasses Google's CAPTCHA wall** (verified
 live — 12 organic results where curl/plain-puppeteer got only the CAPTCHA page).
 
+> Snippets come back empty for `#:~:text=` highlight-style results — Google
+> doesn't ship a snippet block for those in the server HTML (confirmed with a
+> full DOM parser), so there's nothing to extract.
+
 Roadmap: a small CSS-selector engine so engines become declarative (selector
-tables, no MFL), sturdier snippet/displayed_link extraction on live HTML, and a
-SQLite result cache. Staying CLI agent-first — no SerpApi-parity server.
+tables, no MFL), and a SQLite result cache. Staying CLI agent-first — no
+SerpApi-parity server.
 
 ## Quick start
 

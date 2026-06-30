@@ -1,0 +1,47 @@
+{
+  "search_metadata": {
+    "status": "Success",
+    "engine": "google"
+  },
+  "search_parameters": {
+    "engine": "google",
+    "q": "machin programming language"
+  },
+  "organic_results": [
+    {
+      "position": 1,
+      "title": "Machine code",
+      "link": "https://en.wikipedia.org/wiki/Machine_code",
+      "displayed_link": "https://en.wikipedia.org › wiki › Machine_code",
+      "snippet": "In computing, machine code is data encoded and structured to control a computer's central processing unit (CPU) via its programmable interface.Read more"
+    },
+    {
+      "position": 2,
+      "title": "What Coding Language Is Used on CNC Machines?",
+      "link": "https://www.mastercam.com/community/blog/what-coding-language-is-used-on-cnc-machines/",
+      "displayed_link": "https://www.mastercam.com › Community › Blog",
+      "snippet": "Sep 27, 2022 — G-code, simply put, is the language that CNC machines understand. In this piece, we refer to all of this language as G-code, G, M, F, S, and T."
+    },
+    {
+      "position": 3,
+      "title": "How are CNC machines programmed, and what ...",
+      "link": "https://www.quora.com/How-are-CNC-machines-programmed-and-what-programming-languages-are-used",
+      "displayed_link": "quora.com",
+      "snippet": "How are CNC machines programmed, and what programming languages are used?"
+    },
+    {
+      "position": 4,
+      "title": "What Is Machine Language? (Explained for Absolute ...",
+      "link": "https://medium.com/@TechiesSpot/what-is-machine-language-explained-for-absolute-beginners-eaffa57c5c98",
+      "displayed_link": "medium.com",
+      "snippet": "Machine language is the lowest-level programming language. It's made of binary numbers (0s and 1s) that directly tell the computer's hardware ...Read more"
+    },
+    {
+      "position": 5,
+      "title": "What is Machine Language? Assembler Explained ... - Lenovo",
+      "link": "https://www.lenovo.com/us/en/glossary/machine-language/#:~:text=Machine%20language%20is%20the%20lowest,computers%20understand%20at%20their%20core.",
+      "displayed_link": "https://www.lenovo.com › glossary › machine-language",
+      "snippet": ""
+    }
+  ]
+}
