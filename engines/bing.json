@@ -1,0 +1,11 @@
+{
+  "engine": "bing",
+  "output": "organic_results",
+  "result": "li.b_algo",
+  "fields": [
+    { "name": "title",          "sel": "h2 a",            "get": "text" },
+    { "name": "link",           "sel": "h2 a",            "get": "@href", "transform": "bing_redirect" },
+    { "name": "displayed_link", "sel": "cite",            "get": "text" },
+    { "name": "snippet",        "sel": "div.b_caption p", "get": "text" }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "search_metadata": {
+    "status": "Success",
+    "engine": "bing"
+  },
+  "search_parameters": {
+    "engine": "bing",
+    "q": ""
+  },
+  "organic_results": [
+    {
+      "position": 1,
+      "title": "Machine code - Wikipedia",
+      "link": "https://en.wikipedia.org/wiki/Machine_code",
+      "displayed_link": "https://en.wikipedia.org › wiki › Machine_code",
+      "snippet": "Machine code is classified as native with respect to its host CPU since it is the language that the CPU interprets directly. [2] Some …"
+    },
+    {
+      "position": 2,
+      "title": "What is Machine Language? - GeeksforGeeks",
+      "link": "https://www.geeksforgeeks.org/computer-organization-architecture/what-is-machine-language/",
+      "displayed_link": "https://www.geeksforgeeks.org › computer...",
+      "snippet": "Jul 23, 2025 · Machine language is a low-level programming language that is understood by computers. Machine language is made …"
+    },
+    {
+      "position": 3,
+      "title": "A Beginner's Guide To Machine Programming - Dataconomy",
+      "link": "https://dataconomy.com/2023/07/24/a-beginners-guide-to-machine-programming/",
+      "displayed_link": "https://dataconomy.com › a-beginners-guide-to-machine-programming",
+      "snippet": "Jul 24, 2023 · Machine language is the lowest level of programming language and is an essential component of computer …"
+    }
+  ]
+}

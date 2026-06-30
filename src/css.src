@@ -332,6 +332,18 @@ func ddg_unwrap(href) (u) {
     u = url_decode(substr(rest, 0, e))
 }
 
+// bing_unwrap decodes Bing's ck/a redirect (…&u=a1<base64url> -> real URL).
+func bing_unwrap(href) (u) {
+    u = href
+    p := index(href, "u=a1")
+    if p < 0 { return }
+    rest := substr(href, p+4, len(href))
+    e := index(rest, "&")
+    if e < 0 { e = len(rest) }
+    dec := base64_decode(substr(rest, 0, e))
+    if len(dec) > 0 { u = dec }
+}
+
 // unq strips the surrounding quotes off a json_get string token.
 func unq(s) (o) {
     o = s
@@ -344,6 +356,7 @@ func apply_transform(val, trans) (o) {
     o = val
     if trans == "url" { o = normalize(val) }
     if trans == "ddg_redirect" { o = ddg_unwrap(val) }
+    if trans == "bing_redirect" { o = bing_unwrap(val) }
     if trans == "https" {
         o = val
         if starts(val, "//") { o = "https:" + val }

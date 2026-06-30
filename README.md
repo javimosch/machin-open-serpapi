@@ -39,10 +39,11 @@ Early but real. Two engines:
   cites are metadata ("4 months ago"). Verified on live SERP HTML — 12/12
   results with correct links + display links.
 - **`google_maps`** — raw record array → SerpApi `local_results[]`.
-- **`duckduckgo`** — **defined as pure JSON, no MFL.** A tiny CSS-selector engine
-  (`src/css.src`: HTML → DOM → selector matching) runs a declarative spec
-  ([`engines/duckduckgo.json`](engines/README.md)). Verified on live DDG HTML —
-  10/10 results. Adding a clean-markup engine (Bing, Startpage, …) is now a JSON
+- **`duckduckgo`** & **`bing`** — **defined as pure JSON, no MFL.** A tiny
+  CSS-selector engine (`src/css.src`: HTML → DOM → selector matching) runs a
+  declarative spec ([`engines/*.json`](engines/README.md)). Both verified on live
+  HTML — 10/10 results each; Bing's base64 `ck/a` redirect links are decoded to
+  real URLs. Adding a clean-markup engine (Startpage, Brave, …) is now a JSON
   file, not code.
 
 Fetch is solved at the agent-first level too: `fetchers/google.sh` drives the
@@ -72,8 +73,9 @@ MACHIN=~/ai/machin/machin ./build.sh   # against a local machin
 # Google, past the CAPTCHA wall (Botasaurus anti-detect browser — verified live)
 ./fetchers/google.sh "machin programming language" | ./open-serpapi parse --engine google
 
-# DuckDuckGo — engine defined entirely by engines/duckduckgo.json, no MFL
+# DuckDuckGo / Bing — engines defined entirely by engines/*.json, no MFL
 ./fetchers/duckduckgo.sh "machin programming language" | ./open-serpapi parse --engine duckduckgo
+./fetchers/bing.sh       "machin programming language" | ./open-serpapi parse --engine bing
 ```
 
 Output (SerpApi `google_maps` shape):

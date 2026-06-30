@@ -38,7 +38,7 @@ the spec's selectors. This is how `duckduckgo` is defined — see
 | `fields[].name` | output key |
 | `fields[].sel` | CSS selector (first match wins) |
 | `fields[].get` | `text` (inner text) or `@attr` (e.g. `@href`) |
-| `fields[].transform` | optional: `ddg_redirect`, `url` (decode Google `/url?q=`), `https` (prefix `//…`) |
+| `fields[].transform` | optional: `ddg_redirect`, `bing_redirect` (decode Bing `ck/a?…&u=a1<base64>`), `url` (decode Google `/url?q=`), `https` (prefix `//…`) |
 
 Each row also gets a 1-based `position`. A field whose selector matches nothing
 becomes `""`.
