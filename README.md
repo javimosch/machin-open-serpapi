@@ -126,7 +126,8 @@ to *refresh* fixtures when a SERP's HTML drifts.
 
 ```
 src/serpapi.src     # core: bespoke parsers (google, google_maps) + schema + CLI
-src/css.src         # HTML -> DOM + CSS-selector engine + spec runner
+src/css.src         # HTML -> DOM + CSS-selector engine + spec runner + linkedin
+skills/             # agent-loadable how-to guides (open-serpapi.md, linkedin.md)
 engines/<name>.json # declarative spec-driven engines (e.g. duckduckgo) + how-to
 build.sh            # encode src/*.src -> .mfl -> native binary
 fetchers/           # layer-1 plugins (the pipe boundary) + the contract
@@ -134,6 +135,13 @@ fixtures/<engine>/  # frozen raw fetcher output (parser input)
 golden/<engine>/    # expected output (parser spec)
 test.sh             # run fixtures through the parser, diff goldens
 ```
+
+## Agent skills
+
+Self-contained, in-repo guides for agents driving open-serpapi — [`skills/`](skills/):
+[`open-serpapi.md`](skills/open-serpapi.md) (the model, engines, schemas, adding an
+engine, testing) and [`linkedin.md`](skills/linkedin.md) (authed posts + comments,
+CDP attach, the capability map). The repo is self-documenting for any agent that clones it.
 
 ## License
 

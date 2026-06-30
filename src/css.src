@@ -466,11 +466,11 @@ func profile_link(html, nodes, root) (url, atype) {
 
 // nearest_profile_before: first <a> to /in/ or /company/ at/before node `idx`
 // (a comment's author link sits just before its name in the DOM).
-func nearest_profile_before(html, nodes, idx) (url, atype) {
+func nearest_profile_before(html, nodes, idx, window) (url, atype) {
     url = ""
     atype = ""
     k := idx
-    lim := idx - 60
+    lim := idx - window
     if lim < 0 { lim = 0 }
     for k >= lim {
         if nodes[k].tag == "a" {
@@ -505,7 +505,7 @@ func parse_linkedin_detail(html, q) (out) {
         if ci < len(texts) { ct = node_text(html, nodes, texts[ci]) }
         ch := ""
         if ci < len(subs) { ch = node_text(html, nodes, subs[ci]) }
-        cu, cty := nearest_profile_before(html, nodes, authors[ci])
+        cu, cty := nearest_profile_before(html, nodes, authors[ci], 60)
         if len(ca) > 0 {
             rec := "{\"author\":\"" + jesc(ca) + "\"" +
                 ",\"author_url\":\"" + jesc(cu) + "\"" +
@@ -532,6 +532,33 @@ func parse_linkedin_detail(html, q) (out) {
         "\"posts\":[" + post + "]}"
 }
 
+// author_from_label pulls the post author's name out of the control-menu
+// aria-label, whatever the UI language: EN "… post by NAME", ES "… publicación
+// de NAME", FR "… publication de NAME".
+func author_from_label(al) (name) {
+    name = ""
+    for _, m := range []string{"post by ", "publicación de ", "publication de ", "Beitrag von "} {
+        p := index(al, m)
+        if p >= 0 { name = trim(substr(al, p + len(m), len(al))); return }
+    }
+}
+
+// nearest_post_author scans back from a post body for its control-menu label.
+func nearest_post_author(html, nodes, idx) (name) {
+    name = ""
+    k := idx
+    lim := idx - 220
+    if lim < 0 { lim = 0 }
+    for k >= lim {
+        al := get_attr(nodes[k].attr, "aria-label")
+        if len(al) > 0 {
+            nm := author_from_label(al)
+            if len(nm) > 0 { name = nm; return }
+        }
+        k = k - 1
+    }
+}
+
 func parse_linkedin(html, q) (out) {
     // Post-detail pages use classic semantic classes (with loaded comments);
     // content-search/feed use obfuscated classes (posts only).
@@ -540,39 +567,16 @@ func parse_linkedin(html, q) (out) {
 
     nodes := parse_dom(html)
     n := len(nodes)
-    pre := "Open control menu for post by "
     posts := ""
     count := 0
     i := 0
+    // Anchor on the post body (data-testid="expandable-text-box") — stable and
+    // language-independent — then resolve author name + profile link around it.
     for i < n {
-        al := get_attr(nodes[i].attr, "aria-label")
-        if starts(al, pre) {
-            author := substr(al, len(pre), len(al))
-
-            // post body: next expandable-text-box, stopping at the next post
-            text := ""
-            j := i + 1
-            for j < n {
-                if contains(nodes[j].attr, "expandable-text-box") { text = node_text(html, nodes, j); break }
-                if starts(get_attr(nodes[j].attr, "aria-label"), pre) { break }
-                j = j + 1
-            }
-
-            // author profile: nearest /in/ or /company/ link before the menu
-            aurl := ""
-            atype := ""
-            k := i
-            lim := i - 140
-            if lim < 0 { lim = 0 }
-            for k >= lim {
-                if nodes[k].tag == "a" {
-                    h := get_attr(nodes[k].attr, "href")
-                    if contains(h, "/in/") { aurl = h; atype = "person"; break }
-                    if contains(h, "/company/") { aurl = h; atype = "company"; break }
-                }
-                k = k - 1
-            }
-
+        if contains(nodes[i].attr, "expandable-text-box") {
+            text := node_text(html, nodes, i)
+            author := nearest_post_author(html, nodes, i)
+            aurl, atype := nearest_profile_before(html, nodes, i, 220)
             count = count + 1
             rec := "{\"position\":" + str(count) +
                 ",\"author\":\"" + jesc(author) + "\"" +

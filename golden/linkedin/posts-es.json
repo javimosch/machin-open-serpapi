@@ -1,0 +1,36 @@
+{
+  "search_metadata": {
+    "status": "Success",
+    "engine": "linkedin"
+  },
+  "search_parameters": {
+    "engine": "linkedin",
+    "q": ""
+  },
+  "posts": [
+    {
+      "position": 1,
+      "author": "María López",
+      "author_url": "https://www.linkedin.com/in/maria-lopez-9/",
+      "author_type": "person",
+      "text": "Self-hosting de nuestra infraestructura nos dio control y bajó costes para una PYME. #DevOps #SelfHosting",
+      "hashtags": [
+        "DevOps",
+        "SelfHosting"
+      ],
+      "comments": []
+    },
+    {
+      "position": 2,
+      "author": "DevOpsPack",
+      "author_url": "https://www.linkedin.com/company/devopspack/",
+      "author_type": "company",
+      "text": "Reemplazar SaaS propietario por modelos open-source auto-alojados. #SelfHosting #OpenSource",
+      "hashtags": [
+        "SelfHosting",
+        "OpenSource"
+      ],
+      "comments": []
+    }
+  ]
+}
