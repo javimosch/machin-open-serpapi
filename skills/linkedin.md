@@ -25,10 +25,12 @@ nested `comments[]`. It auto-detects two page shapes:
 | **Comments for keyword-matched posts (one command)** | ✅ yes | `linkedin-search-threads.sh "<keywords>" [limit]` → posts each with `comments[]`. |
 | Reaction counts / reactor list | ❌ not yet | not parsed |
 
-So: **keyword → posts → comments is closed.** LinkedIn keeps post URNs out of the
-search DOM, but they're in the search **API (Voyager) responses**; the orchestrator
-captures them via CDP network interception, then opens each `/feed/update/<urn>/`
-detail page and parses its comments.
+So: **keyword → posts → comments is closed.** LinkedIn keeps usable post URNs out
+of the search DOM/API, so the orchestrator mimics a human: for each result it opens
+the post's ⋯ menu, clicks **Copy link to post** (→ clipboard), pauses a few seconds,
+then opens that exact link in a new tab and parses its comments. Using the real
+copied URL (not a reconstructed one) avoids "this post can't be shown", and the
+pacing avoids non-human-activity detection. Keep `limit` small.
 
 ```bash
 # keyword -> posts + their comments, one JSON:
