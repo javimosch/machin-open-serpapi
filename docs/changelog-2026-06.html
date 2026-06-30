@@ -46,7 +46,7 @@
             </div>
             <div>
               <h3 class="text-xl font-semibold text-white mb-2">Search results as clean JSON</h3>
-              <p class="text-white/40 leading-relaxed">A single native binary that turns raw search-engine pages into structured JSON your agents can use — Google organic results, Google Maps places, DuckDuckGo and Bing. Pipe in raw HTML, get back titles, links, snippets and display links.</p>
+              <p class="text-white/40 leading-relaxed">A single native binary that turns raw search-engine pages into structured JSON your agents can use — six engines: Google organic, Google Maps places, DuckDuckGo, Bing, Startpage and Brave. Pipe in raw HTML, get back titles, links, snippets and display links.</p>
             </div>
           </div>
         </div>
@@ -106,10 +106,21 @@
         <div class="space-y-8">
 
         <section>
+          <h2 class="text-2xl font-semibold text-emerald-400 mb-4 flex items-center gap-2">
+            <span>📚</span> Documentation
+          </h2>
+          <ul class="space-y-2 text-slate-300">
+            <li><span class="text-slate-500 text-sm mr-3">[30/06]</span>docs: landing page + June 2026 changelog + MIT license</li>
+          </ul>
+        </section>
+
+        <section>
           <h2 class="text-2xl font-semibold text-purple-400 mb-4 flex items-center gap-2">
             <span>💼</span> Other
           </h2>
           <ul class="space-y-2 text-slate-300">
+            <li><span class="text-slate-500 text-sm mr-3">[30/06]</span>engines: startpage + brave (declarative JSON specs)</li>
+            <li><span class="text-slate-500 text-sm mr-3">[30/06]</span>google_maps: pass through gps_coordinates, place_id, maps_url</li>
             <li><span class="text-slate-500 text-sm mr-3">[30/06]</span>engine: bing (declarative JSON spec, no MFL)</li>
             <li><span class="text-slate-500 text-sm mr-3">[30/06]</span>css: declarative CSS-selector engine + duckduckgo (no MFL)</li>
             <li><span class="text-slate-500 text-sm mr-3">[30/06]</span>google: harden displayed_link on live HTML + real-block regression fixture</li>

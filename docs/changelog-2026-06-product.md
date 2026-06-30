@@ -6,7 +6,7 @@
             </div>
             <div>
               <h3 class="text-xl font-semibold text-white mb-2">Search results as clean JSON</h3>
-              <p class="text-white/40 leading-relaxed">A single native binary that turns raw search-engine pages into structured JSON your agents can use — Google organic results, Google Maps places, DuckDuckGo and Bing. Pipe in raw HTML, get back titles, links, snippets and display links.</p>
+              <p class="text-white/40 leading-relaxed">A single native binary that turns raw search-engine pages into structured JSON your agents can use — six engines: Google organic, Google Maps places, DuckDuckGo, Bing, Startpage and Brave. Pipe in raw HTML, get back titles, links, snippets and display links.</p>
             </div>
           </div>
         </div>
