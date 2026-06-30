@@ -22,12 +22,23 @@ nested `comments[]`. It auto-detects two page shapes:
 | **Search posts by keyword** | ✅ yes | `linkedin.sh content "<keywords>"` → `posts[]` (author, author_url, author_type, text, hashtags). Language-independent. |
 | Posts by author/company | ✅ yes | `linkedin.sh url "https://www.linkedin.com/in/<slug>/recent-activity/all/"` |
 | **Comments of a specific post** | ✅ yes | `linkedin.sh url "https://www.linkedin.com/feed/update/urn:li:activity:<id>/"` → `posts[0].comments[]` |
-| **Comments for keyword-matched posts (one step)** | ⚠️ **no** | The content-search DOM does **not** expose per-post permalinks/URNs, so there is no automatic keyword → posts → comments chain. Do it in two manual steps: search for posts, then fetch each post's detail URL (when you have it) or use `grab`. |
+| **Comments for keyword-matched posts (one command)** | ✅ yes | `linkedin-search-threads.sh "<keywords>" [limit]` → posts each with `comments[]`. |
 | Reaction counts / reactor list | ❌ not yet | not parsed |
 
-So: **posts-by-keyword = yes; comments = yes but per-post**, not auto-joined to a
-keyword search. To go from a keyword to comments you currently need the post's URL
-(open it in the browser and `grab`, or paste a `/feed/update/<urn>/` URL).
+So: **keyword → posts → comments is closed.** LinkedIn keeps post URNs out of the
+search DOM, but they're in the search **API (Voyager) responses**; the orchestrator
+captures them via CDP network interception, then opens each `/feed/update/<urn>/`
+detail page and parses its comments.
+
+```bash
+# keyword -> posts + their comments, one JSON:
+./fetchers/linkedin-search-threads.sh "AI in France" 3 \
+  | jq '.posts[] | {author, urn, comment_count, commenters: [.comments[].author]}'
+```
+
+Output: `{ search_parameters:{q}, post_count, posts:[ {author, urn, url, text,
+hashtags, comment_count, comments:[{author, author_url, headline, text}] } ] }`.
+Keep `limit` small (each post is one more page load; LinkedIn rate-limits).
 
 ## Fetching (authed) — prefer CDP attach to your real browser
 
@@ -81,10 +92,13 @@ post-detail/grab page `posts[0]` is the post with its `comments[]` filled.
 
 Posts give **what topics/hashtags are active and who's posting**; a post's comments
 give **who's engaging and their headlines/roles** — directly actionable for "who to
-reach and where to post". Typical flow an external agent runs:
-1. `linkedin.sh content "<ICP topic>"` → posts + hashtags → topic/author signal.
-2. Open a high-engagement post in the browser, scroll, `linkedin.sh grab` → its
-   commenters (names, profiles, headlines) → warm leads / people to engage.
+reach and where to post". One command does the whole loop:
+
+```bash
+./fetchers/linkedin-search-threads.sh "<ICP topic>" 5
+# -> posts on the topic, each with its commenters (names, /in/ profiles, headlines):
+#    the engagement graph an agent ranks into warm leads + where to post.
+```
 
 ## ⚠️ ToS / account risk
 
