@@ -27,8 +27,11 @@ proxy-backed crawler, or a cached file. Swap fetchers without touching the parse
   + a `VwiC3b` snippet block), so it tolerates Google's randomized class names.
   Emits `organic_results[]`. See `../fixtures/google/`.
 - **`google_maps`** → the raw record array a Maps scraper emits, objects shaped
-  `{name, rating, reviews_count, address, website, phone, type, query}`.
-  Missing fields become `null` in the output. See `../fixtures/google_maps/`.
+  `{name, rating, reviews_count, address, website, phone, type, query}` plus
+  optional `{lat, lng, place_id, maps_url}` (surfaced as `gps_coordinates` /
+  `place_id` / `maps_url`). Missing fields become `null`. The generic
+  `gm-scraper.js` under `~/ai/google-maps-scraper` emits all of these.
+  See `../fixtures/google_maps/`.
 
 ## Included
 

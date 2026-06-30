@@ -38,7 +38,9 @@ Early but real. Two engines:
   falls back to the bare domain for result types (Quora, Medium) whose only
   cites are metadata ("4 months ago"). Verified on live SERP HTML — 12/12
   results with correct links + display links.
-- **`google_maps`** — raw record array → SerpApi `local_results[]`.
+- **`google_maps`** — raw record array → `local_results[]` (`title`, `rating`,
+  `reviews`, `type`, `address`, `phone`, `website`, `gps_coordinates`,
+  `place_id`, `maps_url`) — actionable rows for outreach/lead lists.
 - **`duckduckgo`** & **`bing`** — **defined as pure JSON, no MFL.** A tiny
   CSS-selector engine (`src/css.src`: HTML → DOM → selector matching) runs a
   declarative spec ([`engines/*.json`](engines/README.md)). Both verified on live

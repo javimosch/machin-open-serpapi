@@ -69,6 +69,11 @@ func parse_maps(raw, q) (out) {
         name, e := json_get(raw, "[" + str(i) + "].name")
         if e != "" { break }
         base := "[" + str(i) + "]"
+        // gps_coordinates: a nested object built from lat/lng (null if absent).
+        lat := field(raw, base + ".lat")
+        lng := field(raw, base + ".lng")
+        gps := "null"
+        if lat != "null" { gps = "{\"latitude\":" + lat + ",\"longitude\":" + lng + "}" }
         rec := "{\"position\":" + str(i+1) +
             ",\"title\":" + name +
             ",\"rating\":" + field(raw, base + ".rating") +
@@ -77,6 +82,9 @@ func parse_maps(raw, q) (out) {
             ",\"address\":" + field(raw, base + ".address") +
             ",\"phone\":" + field(raw, base + ".phone") +
             ",\"website\":" + field(raw, base + ".website") +
+            ",\"gps_coordinates\":" + gps +
+            ",\"place_id\":" + field(raw, base + ".place_id") +
+            ",\"maps_url\":" + field(raw, base + ".maps_url") +
             "}"
         if count > 0 { items = items + "," }
         items = items + rec

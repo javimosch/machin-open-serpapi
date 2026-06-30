@@ -1,0 +1,34 @@
+[
+  {
+    "name": "NowTeam - Infogérance PME GrenobleIT support and services",
+    "rating": null,
+    "reviews_count": null,
+    "type": "",
+    "price_level": null,
+    "address": "157 Cours Berriat",
+    "phone": "04 58 00 55 50",
+    "website": "",
+    "hours": "Open",
+    "place_id": "0x478af318878ce355:0x6b28996b78e21c9d",
+    "lat": 45.188021,
+    "lng": 5.704333,
+    "maps_url": "https://www.google.com/maps/place/NowTeam+-+Infog%C3%A9rance+PME+Grenoble/data=!4m7!3m6!1s0x478af318878ce355:0x6b28996b78e21c9d!8m2!3d45.188021!4d5.704333!16s%2Fg%2F11g0z1mkjf!19sChIJVeOMhxjzikcRnRzieGuZKGs?authuser=0&hl=en&rclk=1",
+    "query": "software company Grenoble"
+  },
+  {
+    "name": "AViSTO Développement logiciel DevOps QA Data",
+    "rating": 4.8,
+    "reviews_count": 10,
+    "type": "",
+    "price_level": null,
+    "address": "100 Rue Félix Esclangon Bâtiment Spring",
+    "phone": "01 41 87 67 00",
+    "website": "",
+    "hours": "Open",
+    "place_id": "0x478af48024c014b3:0xf12e852cf5117fdf",
+    "lat": 45.1964007,
+    "lng": 5.7108729,
+    "maps_url": "https://www.google.com/maps/place/AViSTO+%7C+D%C3%A9veloppement+logiciel,+DevOps,+QA,+Data/data=!4m7!3m6!1s0x478af48024c014b3:0xf12e852cf5117fdf!8m2!3d45.1964007!4d5.7108729!16s%2Fg%2F1pp2tlnyj!19sChIJsxTAJID0ikcR338R9SyFLvE?authuser=0&hl=en&rclk=1",
+    "query": "software company Grenoble"
+  }
+]
