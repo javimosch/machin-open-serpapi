@@ -1,0 +1,42 @@
+[
+  {
+    "name": "La Jardinerie Coworking",
+    "rating": null,
+    "reviews_count": 71,
+    "address": "5 Rue",
+    "website": "",
+    "phone": "04 50 51 85 61",
+    "type": "Coworking",
+    "query": "coworking annecy"
+  },
+  {
+    "name": "The 7th Element Coworking et salles de réunion",
+    "rating": null,
+    "reviews_count": 109,
+    "address": "7 Rue",
+    "website": "",
+    "phone": "06 80 95 61 48",
+    "type": "Coworking",
+    "query": "coworking annecy"
+  },
+  {
+    "name": "Annecy Coworking",
+    "rating": null,
+    "reviews_count": 25,
+    "address": "16 Rue",
+    "website": "",
+    "phone": "04 58 17 24 25",
+    "type": "Coworking",
+    "query": "coworking annecy"
+  },
+  {
+    "name": "Le local coworking Annecy",
+    "rating": null,
+    "reviews_count": 9,
+    "address": "15 Rue Fran",
+    "website": "",
+    "phone": "06 70 79 67 20",
+    "type": "coworking",
+    "query": "coworking annecy"
+  }
+]
