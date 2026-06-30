@@ -1,0 +1,43 @@
+{
+  "search_metadata": {
+    "status": "Success",
+    "engine": "google_maps"
+  },
+  "search_parameters": {
+    "engine": "google_maps",
+    "type": "search",
+    "q": "coworking annecy"
+  },
+  "local_results": [
+    {
+      "position": 1,
+      "title": "Cowork Annecy",
+      "rating": 4.7,
+      "reviews": 128,
+      "type": "Coworking space",
+      "address": "12 Rue Carnot, 74000 Annecy",
+      "phone": "+33 4 50 00 00 00",
+      "website": "https://cowork-annecy.fr"
+    },
+    {
+      "position": 2,
+      "title": "Le Hub",
+      "rating": 4.5,
+      "reviews": 54,
+      "type": "Business center",
+      "address": "3 Av. de Genève, 74000 Annecy",
+      "phone": "+33 4 50 11 11 11",
+      "website": ""
+    },
+    {
+      "position": 3,
+      "title": "Regus — Annecy Centre",
+      "rating": 4.1,
+      "reviews": null,
+      "type": "Office space rental agency",
+      "address": "5 Pl. de la Gare, 74000 Annecy",
+      "phone": "",
+      "website": "https://regus.com"
+    }
+  ]
+}

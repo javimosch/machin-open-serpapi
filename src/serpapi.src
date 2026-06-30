@@ -1,0 +1,122 @@
+// open-serpapi — an OSS, agent-first, self-hostable SerpApi alternative.
+//
+// This binary owns SerpApi layers 2 & 3 only: PARSE (raw bytes -> structure)
+// and SCHEMA (a stable SerpApi-shaped JSON contract). Layer 1 (FETCH) is a
+// plugin boundary: any program that emits raw bytes on stdout is a fetcher.
+// open-serpapi never touches the network, so it has no TLS dependency and is
+// fully deterministic + offline-testable against saved fixtures.
+//
+//   <fetcher> "query"  |  open-serpapi parse --engine google_maps  ->  SerpApi JSON
+//
+// First engine: google_maps. Input = the raw record array a Maps fetcher emits
+// (see fetchers/google-maps.sh); output = SerpApi's `local_results` shape.
+
+func usage() {
+    println("open-serpapi — parse raw SERP bytes into SerpApi-shaped JSON")
+    println("")
+    println("usage:")
+    println("  <fetcher> \"query\" | open-serpapi parse --engine <engine> [--query <q>]")
+    println("")
+    println("commands:")
+    println("  parse   read raw fetcher output on stdin, print SerpApi JSON on stdout")
+    println("  help    show this")
+    println("")
+    println("engines:")
+    println("  google_maps   raw record array -> local_results[]")
+}
+
+// get_flag returns the value following `name` in argv, or "" if absent.
+func get_flag(a, name) (val) {
+    val = ""
+    n := len(a)
+    i := 0
+    for i < n {
+        if a[i] == name {
+            if i + 1 < n { val = a[i+1] }
+            return
+        }
+        i = i + 1
+    }
+}
+
+// field returns the RAW JSON token at `path` (numbers bare, strings quoted),
+// or "null" if the path is missing — so it drops straight into output JSON.
+func field(raw, path) (tok) {
+    tok = "null"
+    v, e := json_get(raw, path)
+    if e == "" { tok = v }
+}
+
+// parse_maps normalizes a raw Maps record array into SerpApi google_maps JSON.
+// Each input record looks like {name,rating,reviews_count,address,website,phone,type,query}.
+func parse_maps(raw, q) (out) {
+    // Resolve the query token (a quoted JSON string): --query wins, else the
+    // first record's own `query` field, else empty string.
+    qtok := "\"\""
+    if len(q) > 0 {
+        qtok = "\"" + q + "\""
+    }
+    if len(q) == 0 {
+        v, e := json_get(raw, "[0].query")
+        if e == "" { qtok = v }
+    }
+
+    items := ""
+    i := 0
+    count := 0
+    for {
+        name, e := json_get(raw, "[" + str(i) + "].name")
+        if e != "" { break }
+        base := "[" + str(i) + "]"
+        rec := "{\"position\":" + str(i+1) +
+            ",\"title\":" + name +
+            ",\"rating\":" + field(raw, base + ".rating") +
+            ",\"reviews\":" + field(raw, base + ".reviews_count") +
+            ",\"type\":" + field(raw, base + ".type") +
+            ",\"address\":" + field(raw, base + ".address") +
+            ",\"phone\":" + field(raw, base + ".phone") +
+            ",\"website\":" + field(raw, base + ".website") +
+            "}"
+        if count > 0 { items = items + "," }
+        items = items + rec
+        count = count + 1
+        i = i + 1
+    }
+
+    out = "{\"search_metadata\":{\"status\":\"Success\",\"engine\":\"google_maps\"}," +
+        "\"search_parameters\":{\"engine\":\"google_maps\",\"type\":\"search\",\"q\":" + qtok + "}," +
+        "\"local_results\":[" + items + "]}"
+}
+
+func main() {
+    a := args()
+    if len(a) < 2 {
+        usage()
+        return
+    }
+    cmd := a[1]
+    if cmd == "help" {
+        usage()
+        return
+    }
+    if cmd == "version" {
+        println("open-serpapi 0.1.0")
+        return
+    }
+    if cmd != "parse" {
+        println("unknown command: " + cmd)
+        usage()
+        return
+    }
+
+    engine := get_flag(a, "--engine")
+    if engine == "" { engine = "google_maps" }
+    if engine != "google_maps" {
+        println("{\"error\":\"engine not supported yet: " + engine + "\"}")
+        return
+    }
+
+    raw := read_stdin()
+    q := get_flag(a, "--query")
+    println(parse_maps(raw, q))
+}
