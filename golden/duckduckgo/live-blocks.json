@@ -1,0 +1,33 @@
+{
+  "search_metadata": {
+    "status": "Success",
+    "engine": "duckduckgo"
+  },
+  "search_parameters": {
+    "engine": "duckduckgo",
+    "q": ""
+  },
+  "organic_results": [
+    {
+      "position": 1,
+      "title": "Machine code - Wikipedia",
+      "link": "https://en.wikipedia.org/wiki/Machine_code",
+      "displayed_link": "en.wikipedia.org/wiki/Machine_code",
+      "snippet": "Machine code is classified as native with respect to its host CPU since it is the language that the CPU interprets directly. [2] Some software interpreters translate the programming language that they interpret into a virtual machine code (bytecode) and process it with a P-code machine."
+    },
+    {
+      "position": 2,
+      "title": "What is Machine Language? - GeeksforGeeks",
+      "link": "https://www.geeksforgeeks.org/computer-organization-architecture/what-is-machine-language/",
+      "displayed_link": "www.geeksforgeeks.org/computer-organization-architecture/what-is-machine-language/",
+      "snippet": "Machine language is a low-level programming language that is understood by computers. Machine language is made up of binary bits 0 and 1. Machine language is also known as machine codes or object code. As machine language consists of only 0 and 1, that's why it is difficult to understand in raw form. Machine language cannot understood by humans. The CPU processes this machine code as input. In ..."
+    },
+    {
+      "position": 3,
+      "title": "A Beginner's Guide To Machine Programming - Dataconomy",
+      "link": "https://dataconomy.com/2023/07/24/a-beginners-guide-to-machine-programming/",
+      "displayed_link": "dataconomy.com/2023/07/24/a-beginners-guide-to-machine-programming/",
+      "snippet": "Machine language is the lowest level of programming language and is an essential component of computer programming. Understanding machine language is critical for programmers because it allows them to develop software that can communicate directly with the hardware of a computer."
+    }
+  ]
+}

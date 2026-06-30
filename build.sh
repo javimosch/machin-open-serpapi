@@ -5,6 +5,6 @@ set -euo pipefail
 cd "$(dirname "$0")"
 MACHIN="${MACHIN:-machin}"
 mkdir -p build
-"$MACHIN" encode src/serpapi.src > build/serpapi.mfl
+"$MACHIN" encode src/serpapi.src src/css.src > build/serpapi.mfl
 "$MACHIN" build build/serpapi.mfl -o open-serpapi
 echo "built ./open-serpapi"

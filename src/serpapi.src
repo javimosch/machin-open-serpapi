@@ -369,5 +369,12 @@ func main() {
     q := get_flag(a, "--query")
     if engine == "google_maps" { println(parse_maps(raw, q)); return }
     if engine == "google" { println(parse_google(raw, q)); return }
-    println("{\"error\":\"engine not supported yet: " + engine + "\"}")
+
+    // Spec-driven engines: engines/<engine>.json (or --spec <file>) — a
+    // declarative CSS-selector table, no MFL. See src/css.src.
+    specFile := get_flag(a, "--spec")
+    if len(specFile) == 0 { specFile = "engines/" + engine + ".json" }
+    spec := read_file(specFile)
+    if len(spec) > 0 { println(run_engine(raw, spec, q)); return }
+    println("{\"error\":\"engine not supported: " + engine + " (no " + specFile + ")\"}")
 }

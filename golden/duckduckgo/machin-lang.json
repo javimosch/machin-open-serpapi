@@ -1,0 +1,26 @@
+{
+  "search_metadata": {
+    "status": "Success",
+    "engine": "duckduckgo"
+  },
+  "search_parameters": {
+    "engine": "duckduckgo",
+    "q": ""
+  },
+  "organic_results": [
+    {
+      "position": 1,
+      "title": "machin: a Go-flavored, machine-first language",
+      "link": "https://github.com/javimosch/machin",
+      "displayed_link": "github.com/javimosch/machin",
+      "snippet": "MFL compiles through C to a single native binary — one declaration per line."
+    },
+    {
+      "position": 2,
+      "title": "Machine code - Wikipedia",
+      "link": "https://en.wikipedia.org/wiki/Machine_code",
+      "displayed_link": "en.wikipedia.org/wiki/Machine_code",
+      "snippet": "In computing, machine code is data & instructions a CPU executes directly."
+    }
+  ]
+}

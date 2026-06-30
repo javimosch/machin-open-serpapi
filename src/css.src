@@ -1,0 +1,407 @@
+// ─────────────────────────────────────────────────────────────────────────
+// A tiny CSS-selector engine in MFL, so new engines become DECLARATIVE:
+// drop an engines/<name>.json selector spec, no MFL required.
+//
+// Three parts:
+//   1. parse_dom  — HTML -> a flat DOM (nodes with tag/attrs/parent/byte-range).
+//                   Assumes well-formed serialized DOM (our fetchers render via
+//                   a real browser, so every tag is closed and properly nested).
+//   2. a CSS subset matcher — tag, .class, #id, [attr], [attr="val"], compound
+//                   (div.a.b), descendant (space) and child (>) combinators.
+//   3. run_engine — apply a JSON spec (result selector + per-field selectors)
+//                   over the DOM and emit JSON rows.
+// Reuses helpers from serpapi.src: idx_from, starts, clean_text, jesc,
+// normalize, url_decode, substr/index/etc.
+// ─────────────────────────────────────────────────────────────────────────
+
+type Node struct {
+    tag    string   // lowercased tag name
+    attr   string   // raw attribute text inside the open tag
+    parent int      // index of parent node, -1 at the root
+    cstart int      // content start byte (just after '>')
+    cend   int      // content end byte (index of the matching '</tag>')
+}
+
+type Sel struct {
+    tag  string   // "" = any
+    cls  string   // space-separated required classes ("" = none)
+    id   string   // "" = any
+    attr string   // required attribute name ("" = none)
+    aval string   // required attribute value ("" = presence only)
+    comb string   // combinator linking to the PREVIOUS compound: "" | " " | ">"
+}
+
+func is_void(name) (b) {
+    b = contains(" br img input meta link hr area base col embed source track wbr param ",
+        " " + name + " ")
+}
+
+// tag_name reads the element name between `start` and the tag's '>' at `gt`.
+func tag_name(html, start, gt) (name) {
+    name = ""
+    i := start
+    for i < gt {
+        c := substr(html, i, i+1)
+        if c == " " || c == "\t" || c == "\n" || c == "\r" || c == "/" { break }
+        name = name + c
+        i = i + 1
+    }
+    name = to_lower(name)
+}
+
+// get_attr extracts name="..." from a raw attribute string, requiring a word
+// boundary before `name` so data-class= doesn't match class=.
+func get_attr(attr, name) (v) {
+    v = ""
+    key := name + "=\""
+    from := 0
+    for {
+        p := idx_from(attr, key, from)
+        if p < 0 { return }
+        okb := p == 0
+        if p > 0 {
+            pc := substr(attr, p-1, p)
+            if pc == " " || pc == "\t" || pc == "\n" { okb = true }
+        }
+        if okb {
+            rest := substr(attr, p + len(key), len(attr))
+            e := index(rest, "\"")
+            if e < 0 { return }
+            v = substr(rest, 0, e)
+            return
+        }
+        from = p + len(key)
+    }
+}
+
+// parse_dom turns HTML into a flat list of nodes via a single stack pass.
+func parse_dom(html) (nodes) {
+    nodes = []Node{}
+    stack := []int{}
+    sp := 0
+    n := len(html)
+    i := 0
+    for i < n {
+        lt := idx_from(html, "<", i)
+        if lt < 0 {
+            i = n
+        } else {
+            c := substr(html, lt+1, lt+2)
+            if c == "!" {
+                // comment or doctype/declaration
+                if substr(html, lt, lt+4) == "<!--" {
+                    e := idx_from(html, "-->", lt)
+                    if e < 0 { i = n } else { i = e + 3 }
+                } else {
+                    e := idx_from(html, ">", lt)
+                    if e < 0 { i = n } else { i = e + 1 }
+                }
+            } else if c == "/" {
+                // closing tag: pop the stack, record content end
+                gt := idx_from(html, ">", lt)
+                if gt < 0 {
+                    i = n
+                } else {
+                    if sp > 0 {
+                        sp = sp - 1
+                        nodes[stack[sp]].cend = lt
+                    }
+                    i = gt + 1
+                }
+            } else {
+                gt := idx_from(html, ">", lt)
+                if gt < 0 {
+                    i = n
+                } else {
+                    name := tag_name(html, lt+1, gt)
+                    if name == "script" || name == "style" || name == "noscript" {
+                        // skip raw-text element content wholesale
+                        closer := "</" + name
+                        e := idx_from(html, closer, gt)
+                        if e < 0 {
+                            i = n
+                        } else {
+                            ce := idx_from(html, ">", e)
+                            if ce < 0 { i = n } else { i = ce + 1 }
+                        }
+                    } else {
+                        attrStr := substr(html, lt + 1 + len(name), gt)
+                        selfclose := is_void(name)
+                        if substr(html, gt-1, gt) == "/" { selfclose = true }
+                        par := -1
+                        if sp > 0 { par = stack[sp-1] }
+                        idx := len(nodes)
+                        nodes = append(nodes, Node{tag: name, attr: attrStr,
+                            parent: par, cstart: gt + 1, cend: gt + 1})
+                        if !selfclose {
+                            if sp < len(stack) { stack[sp] = idx } else { stack = append(stack, idx) }
+                            sp = sp + 1
+                        }
+                        i = gt + 1
+                    }
+                }
+            }
+        }
+    }
+}
+
+func node_text(html, nodes, i) (t) {
+    t = clean_text(substr(html, nodes[i].cstart, nodes[i].cend))
+}
+
+func node_has_class(nodes, i, cls) (b) {
+    classes := get_attr(nodes[i].attr, "class")
+    b = contains(" " + classes + " ", " " + cls + " ")
+}
+
+func strip_quotes(s) (o) {
+    o = s
+    if len(s) >= 2 {
+        f := substr(s, 0, 1)
+        if f == "\"" || f == "'" { o = substr(s, 1, len(s)-1) }
+    }
+}
+
+func parse_compound(comp, comb) (s) {
+    s = Sel{tag: "", cls: "", id: "", attr: "", aval: "", comb: comb}
+    n := len(comp)
+    i := 0
+    for i < n {
+        c := substr(comp, i, i+1)
+        if c == "." || c == "#" || c == "[" { break }
+        s.tag = s.tag + c
+        i = i + 1
+    }
+    for i < n {
+        c := substr(comp, i, i+1)
+        if c == "." {
+            j := i + 1
+            for j < n {
+                cc := substr(comp, j, j+1)
+                if cc == "." || cc == "#" || cc == "[" { break }
+                j = j + 1
+            }
+            cl := substr(comp, i+1, j)
+            if len(s.cls) > 0 { s.cls = s.cls + " " }
+            s.cls = s.cls + cl
+            i = j
+        } else if c == "#" {
+            j := i + 1
+            for j < n {
+                cc := substr(comp, j, j+1)
+                if cc == "." || cc == "#" || cc == "[" { break }
+                j = j + 1
+            }
+            s.id = substr(comp, i+1, j)
+            i = j
+        } else if c == "[" {
+            e := idx_from(comp, "]", i)
+            if e < 0 { e = n }
+            inner := substr(comp, i+1, e)
+            eq := index(inner, "=")
+            if eq < 0 {
+                s.attr = inner
+            } else {
+                s.attr = substr(inner, 0, eq)
+                s.aval = strip_quotes(substr(inner, eq+1, len(inner)))
+            }
+            i = e + 1
+        } else {
+            i = i + 1
+        }
+    }
+    s.tag = to_lower(s.tag)
+}
+
+// parse_selector splits a selector into compound steps with combinators.
+func parse_selector(sel) (out) {
+    out = []Sel{}
+    n := len(sel)
+    i := 0
+    comb := ""
+    for i < n {
+        c := substr(sel, i, i+1)
+        if c == " " {
+            if comb == "" { comb = " " }
+            i = i + 1
+        } else if c == ">" {
+            comb = ">"
+            i = i + 1
+        } else {
+            j := i
+            for j < n {
+                cc := substr(sel, j, j+1)
+                if cc == " " || cc == ">" { break }
+                j = j + 1
+            }
+            out = append(out, parse_compound(substr(sel, i, j), comb))
+            comb = ""
+            i = j
+        }
+    }
+}
+
+func compound_matches(html, nodes, i, s) (b) {
+    b = true
+    if len(s.tag) > 0 {
+        if nodes[i].tag != s.tag { b = false; return }
+    }
+    if len(s.id) > 0 {
+        if get_attr(nodes[i].attr, "id") != s.id { b = false; return }
+    }
+    if len(s.cls) > 0 {
+        for _, cl := range split(s.cls, " ") {
+            if len(cl) > 0 {
+                if !node_has_class(nodes, i, cl) { b = false; return }
+            }
+        }
+    }
+    if len(s.attr) > 0 {
+        av := get_attr(nodes[i].attr, s.attr)
+        if len(s.aval) > 0 {
+            if av != s.aval { b = false; return }
+        } else {
+            if !contains(nodes[i].attr, s.attr + "=\"") { b = false; return }
+        }
+    }
+}
+
+// matches_chain verifies the ancestor chain of node i against sels[0..last-1]
+// (caller has confirmed sels[last] matches node i).
+func matches_chain(html, nodes, i, sels, last) (b) {
+    b = true
+    cur := i
+    k := last
+    for k > 0 {
+        comb := sels[k].comb
+        prev := k - 1
+        if comb == ">" {
+            p := nodes[cur].parent
+            if p < 0 { b = false; return }
+            if !compound_matches(html, nodes, p, sels[prev]) { b = false; return }
+            cur = p
+        } else {
+            a := nodes[cur].parent
+            found := -1
+            for a >= 0 {
+                if compound_matches(html, nodes, a, sels[prev]) { found = a; break }
+                a = nodes[a].parent
+            }
+            if found < 0 { b = false; return }
+            cur = found
+        }
+        k = prev
+    }
+}
+
+// select_in returns indices of nodes matching `sels`, scoped within `root`
+// (root = -1 means the whole document).
+func select_in(html, nodes, root, sels) (res) {
+    res = []int{}
+    last := len(sels) - 1
+    if last < 0 { return }
+    rs := 0
+    re := len(html)
+    if root >= 0 { rs = nodes[root].cstart; re = nodes[root].cend }
+    n := len(nodes)
+    i := 0
+    for i < n {
+        if i != root {
+            within := true
+            if root >= 0 {
+                if nodes[i].cstart < rs || nodes[i].cstart > re { within = false }
+            }
+            if within {
+                if compound_matches(html, nodes, i, sels[last]) {
+                    if matches_chain(html, nodes, i, sels, last) { res = append(res, i) }
+                }
+            }
+        }
+        i = i + 1
+    }
+}
+
+// ddg_unwrap decodes DuckDuckGo's redirect links (//duckduckgo.com/l/?uddg=…).
+func ddg_unwrap(href) (u) {
+    u = href
+    p := index(href, "uddg=")
+    if p < 0 { return }
+    rest := substr(href, p+5, len(href))
+    e := index(rest, "&")
+    if e < 0 { e = len(rest) }
+    u = url_decode(substr(rest, 0, e))
+}
+
+// unq strips the surrounding quotes off a json_get string token.
+func unq(s) (o) {
+    o = s
+    if len(s) >= 2 {
+        if substr(s, 0, 1) == "\"" { o = substr(s, 1, len(s)-1) }
+    }
+}
+
+func apply_transform(val, trans) (o) {
+    o = val
+    if trans == "url" { o = normalize(val) }
+    if trans == "ddg_redirect" { o = ddg_unwrap(val) }
+    if trans == "https" {
+        o = val
+        if starts(val, "//") { o = "https:" + val }
+    }
+}
+
+func extract_field(html, nodes, cont, sel, get, trans) (val) {
+    val = ""
+    hits := select_in(html, nodes, cont, parse_selector(sel))
+    if len(hits) == 0 { return }
+    node := hits[0]
+    if starts(get, "@") {
+        val = get_attr(nodes[node].attr, substr(get, 1, len(get)))
+    } else {
+        val = node_text(html, nodes, node)
+    }
+    val = apply_transform(val, trans)
+}
+
+// run_engine applies a JSON selector spec over the rendered HTML.
+func run_engine(html, spec, q) (out) {
+    nodes := parse_dom(html)
+
+    engName, _ := json_get(spec, ".engine")
+    outKey, _ := json_get(spec, ".output")
+    resSel, _ := json_get(spec, ".result")
+    outKeyS := unq(outKey)
+    if len(outKeyS) == 0 { outKeyS = "results" }
+
+    containers := select_in(html, nodes, -1, parse_selector(unq(resSel)))
+
+    items := ""
+    count := 0
+    ci := 0
+    for ci < len(containers) {
+        cont := containers[ci]
+        rec := "{\"position\":" + str(count+1)
+        fi := 0
+        for {
+            fname, e1 := json_get(spec, ".fields[" + str(fi) + "].name")
+            if e1 != "" { break }
+            fsel, _ := json_get(spec, ".fields[" + str(fi) + "].sel")
+            fget, _ := json_get(spec, ".fields[" + str(fi) + "].get")
+            ftrans, et := json_get(spec, ".fields[" + str(fi) + "].transform")
+            tr := ""
+            if et == "" { tr = unq(ftrans) }
+            v := extract_field(html, nodes, cont, unq(fsel), unq(fget), tr)
+            rec = rec + ",\"" + unq(fname) + "\":\"" + jesc(v) + "\""
+            fi = fi + 1
+        }
+        rec = rec + "}"
+        if count > 0 { items = items + "," }
+        items = items + rec
+        count = count + 1
+        ci = ci + 1
+    }
+
+    out = "{\"search_metadata\":{\"status\":\"Success\",\"engine\":\"" + jesc(unq(engName)) + "\"}," +
+        "\"search_parameters\":{\"engine\":\"" + jesc(unq(engName)) + "\",\"q\":\"" + jesc(q) + "\"}," +
+        "\"" + outKeyS + "\":[" + items + "]}"
+}

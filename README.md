@@ -39,6 +39,11 @@ Early but real. Two engines:
   cites are metadata ("4 months ago"). Verified on live SERP HTML — 12/12
   results with correct links + display links.
 - **`google_maps`** — raw record array → SerpApi `local_results[]`.
+- **`duckduckgo`** — **defined as pure JSON, no MFL.** A tiny CSS-selector engine
+  (`src/css.src`: HTML → DOM → selector matching) runs a declarative spec
+  ([`engines/duckduckgo.json`](engines/README.md)). Verified on live DDG HTML —
+  10/10 results. Adding a clean-markup engine (Bing, Startpage, …) is now a JSON
+  file, not code.
 
 Fetch is solved at the agent-first level too: `fetchers/google.sh` drives the
 Botasaurus anti-detect browser and **bypasses Google's CAPTCHA wall** (verified
@@ -48,9 +53,8 @@ live — 12 organic results where curl/plain-puppeteer got only the CAPTCHA page
 > doesn't ship a snippet block for those in the server HTML (confirmed with a
 > full DOM parser), so there's nothing to extract.
 
-Roadmap: a small CSS-selector engine so engines become declarative (selector
-tables, no MFL), and a SQLite result cache. Staying CLI agent-first — no
-SerpApi-parity server.
+Roadmap: more declarative engines (Bing, Startpage), and a SQLite result cache.
+Staying CLI agent-first — no SerpApi-parity server.
 
 ## Quick start
 
@@ -67,6 +71,9 @@ MACHIN=~/ai/machin/machin ./build.sh   # against a local machin
 
 # Google, past the CAPTCHA wall (Botasaurus anti-detect browser — verified live)
 ./fetchers/google.sh "machin programming language" | ./open-serpapi parse --engine google
+
+# DuckDuckGo — engine defined entirely by engines/duckduckgo.json, no MFL
+./fetchers/duckduckgo.sh "machin programming language" | ./open-serpapi parse --engine duckduckgo
 ```
 
 Output (SerpApi `google_maps` shape):
@@ -99,11 +106,13 @@ to *refresh* fixtures when a SERP's HTML drifts.
 ## Layout
 
 ```
-src/serpapi.src     # the MFL core: parse + SerpApi schema (the whole product)
-build.sh            # encode .src -> .mfl -> native binary
+src/serpapi.src     # core: bespoke parsers (google, google_maps) + schema + CLI
+src/css.src         # HTML -> DOM + CSS-selector engine + spec runner
+engines/<name>.json # declarative spec-driven engines (e.g. duckduckgo) + how-to
+build.sh            # encode src/*.src -> .mfl -> native binary
 fetchers/           # layer-1 plugins (the pipe boundary) + the contract
 fixtures/<engine>/  # frozen raw fetcher output (parser input)
-golden/<engine>/    # expected SerpApi-shaped output (parser spec)
+golden/<engine>/    # expected output (parser spec)
 test.sh             # run fixtures through the parser, diff goldens
 ```
 

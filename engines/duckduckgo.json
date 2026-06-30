@@ -1,0 +1,11 @@
+{
+  "engine": "duckduckgo",
+  "output": "organic_results",
+  "result": "div.web-result",
+  "fields": [
+    { "name": "title",          "sel": "a.result__a",       "get": "text" },
+    { "name": "link",           "sel": "a.result__a",       "get": "@href", "transform": "ddg_redirect" },
+    { "name": "displayed_link", "sel": "a.result__url",     "get": "text" },
+    { "name": "snippet",        "sel": "a.result__snippet", "get": "text" }
+  ]
+}
