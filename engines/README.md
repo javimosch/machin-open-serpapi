@@ -51,8 +51,14 @@ Enough for real SERP markup, matched right-to-left over the DOM:
 - compound: `a.result__a.foo`
 - combinators: descendant (space) `div.result a`, child (`>`) `div.result > a`
 
+Attribute-value selectors work even when the container needs them — Brave uses
+`div.snippet[data-type="web"]` to pick only web results.
+
 Because the `result` selector scopes each container, non-organic blocks (ads,
 "People also ask") are excluded structurally — e.g. DDG ads lack `web-result`.
+As a second safety net, a container whose **first field** (the identity field,
+usually `title`) comes back empty is skipped — this drops a Startpage knowledge
+panel that shares `div.result` but has no `a.result-title`.
 
 ## Adding an engine
 

@@ -26,7 +26,7 @@ Fetch (proxies, browsers, API keys) is decoupled and swappable — see
 
 ## Status
 
-Early but real. Two engines:
+Early but real. Six engines:
 
 - **`google`** — rendered SERP **HTML** → `organic_results[]` (`position`,
   `title`, `link`, `displayed_link`, `snippet`). A small HTML tokenizer in MFL
@@ -41,12 +41,13 @@ Early but real. Two engines:
 - **`google_maps`** — raw record array → `local_results[]` (`title`, `rating`,
   `reviews`, `type`, `address`, `phone`, `website`, `gps_coordinates`,
   `place_id`, `maps_url`) — actionable rows for outreach/lead lists.
-- **`duckduckgo`** & **`bing`** — **defined as pure JSON, no MFL.** A tiny
-  CSS-selector engine (`src/css.src`: HTML → DOM → selector matching) runs a
-  declarative spec ([`engines/*.json`](engines/README.md)). Both verified on live
-  HTML — 10/10 results each; Bing's base64 `ck/a` redirect links are decoded to
-  real URLs. Adding a clean-markup engine (Startpage, Brave, …) is now a JSON
-  file, not code.
+- **`duckduckgo`**, **`bing`**, **`startpage`** & **`brave`** — **defined as pure
+  JSON, no MFL.** A tiny CSS-selector engine (`src/css.src`: HTML → DOM → selector
+  matching) runs a declarative spec ([`engines/*.json`](engines/README.md)). All
+  verified on live HTML (10–20 results each); Bing's base64 `ck/a` redirect links
+  are decoded to real URLs, and the runner skips non-result blocks (e.g. a
+  Startpage knowledge panel) whose identity field is empty. Adding a clean-markup
+  engine is a JSON file, not code.
 
 Fetch is solved at the agent-first level too: `fetchers/google.sh` drives the
 Botasaurus anti-detect browser and **bypasses Google's CAPTCHA wall** (verified
@@ -56,7 +57,7 @@ live — 12 organic results where curl/plain-puppeteer got only the CAPTCHA page
 > doesn't ship a snippet block for those in the server HTML (confirmed with a
 > full DOM parser), so there's nothing to extract.
 
-Roadmap: more declarative engines (Bing, Startpage), and a SQLite result cache.
+Roadmap: more declarative engines (Yandex, Mojeek, …), and a SQLite result cache.
 Staying CLI agent-first — no SerpApi-parity server.
 
 ## Quick start
@@ -78,6 +79,8 @@ MACHIN=~/ai/machin/machin ./build.sh   # against a local machin
 # DuckDuckGo / Bing — engines defined entirely by engines/*.json, no MFL
 ./fetchers/duckduckgo.sh "machin programming language" | ./open-serpapi parse --engine duckduckgo
 ./fetchers/bing.sh       "machin programming language" | ./open-serpapi parse --engine bing
+./fetchers/startpage.sh  "machin programming language" | ./open-serpapi parse --engine startpage
+./fetchers/brave.sh      "machin programming language" | ./open-serpapi parse --engine brave
 ```
 
 Output (SerpApi `google_maps` shape):

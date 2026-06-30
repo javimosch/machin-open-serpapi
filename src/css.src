@@ -344,12 +344,16 @@ func bing_unwrap(href) (u) {
     if len(dec) > 0 { u = dec }
 }
 
-// unq strips the surrounding quotes off a json_get string token.
+// unq strips the surrounding quotes off a json_get string token and undoes the
+// JSON escaping inside it, so a spec selector like [data-type="web"] survives.
 func unq(s) (o) {
     o = s
     if len(s) >= 2 {
         if substr(s, 0, 1) == "\"" { o = substr(s, 1, len(s)-1) }
     }
+    o = replace(o, "\\\"", "\"")
+    o = replace(o, "\\/", "/")
+    o = replace(o, "\\\\", "\\")
 }
 
 func apply_transform(val, trans) (o) {
@@ -393,8 +397,9 @@ func run_engine(html, spec, q) (out) {
     ci := 0
     for ci < len(containers) {
         cont := containers[ci]
-        rec := "{\"position\":" + str(count+1)
         fi := 0
+        body := ""
+        firstEmpty := false
         for {
             fname, e1 := json_get(spec, ".fields[" + str(fi) + "].name")
             if e1 != "" { break }
@@ -404,13 +409,18 @@ func run_engine(html, spec, q) (out) {
             tr := ""
             if et == "" { tr = unq(ftrans) }
             v := extract_field(html, nodes, cont, unq(fsel), unq(fget), tr)
-            rec = rec + ",\"" + unq(fname) + "\":\"" + jesc(v) + "\""
+            if fi == 0 { if len(v) == 0 { firstEmpty = true } }
+            body = body + ",\"" + unq(fname) + "\":\"" + jesc(v) + "\""
             fi = fi + 1
         }
-        rec = rec + "}"
-        if count > 0 { items = items + "," }
-        items = items + rec
-        count = count + 1
+        // Skip containers whose first (identity) field is empty — e.g. a
+        // Startpage knowledge block that shares div.result but has no title.
+        if firstEmpty == false {
+            rec := "{\"position\":" + str(count+1) + body + "}"
+            if count > 0 { items = items + "," }
+            items = items + rec
+            count = count + 1
+        }
         ci = ci + 1
     }
 

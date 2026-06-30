@@ -1,0 +1,11 @@
+{
+  "engine": "brave",
+  "output": "organic_results",
+  "result": "div.snippet[data-type=\"web\"]",
+  "fields": [
+    { "name": "title",          "sel": ".title",       "get": "text" },
+    { "name": "link",           "sel": "a",            "get": "@href" },
+    { "name": "displayed_link", "sel": ".snippet-url", "get": "text" },
+    { "name": "snippet",        "sel": "div.content",  "get": "text" }
+  ]
+}

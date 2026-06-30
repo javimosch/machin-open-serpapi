@@ -1,0 +1,26 @@
+{
+  "search_metadata": {
+    "status": "Success",
+    "engine": "startpage"
+  },
+  "search_parameters": {
+    "engine": "startpage",
+    "q": ""
+  },
+  "organic_results": [
+    {
+      "position": 1,
+      "title": "Machine code - Wikipedia",
+      "link": "https://en.wikipedia.org/wiki/Machine_code",
+      "displayed_link": "https://en.wikipedia.org/wiki/Machine_codehttps://en.wikipedia.org  ›  wiki  ›  Machine_code",
+      "snippet": "Machine code is classified as native with respect to its host CPU since it is the language that the CPU interprets directly. Some software interpreters ..."
+    },
+    {
+      "position": 2,
+      "title": "How Programming Languages Are Converted into Machine Code",
+      "link": "https://dev.to/dev-rashedin/how-programming-languages-are-converted-into-machine-code-pil",
+      "displayed_link": "https://dev.to/dev-rashedin/how-programming-languages-are-converted-into-machine-code-pilhttps://dev.to  ›  dev-rashedin  ›  how-programming-languages-are-converted-into-machine-code-pil",
+      "snippet": "10 Dec 2025 ... 1. Direct Compilation to Machine Code. Some languages compile straight to machine code for a specific CPU and OS. Examples: C, C++, Rust, Go."
+    }
+  ]
+}

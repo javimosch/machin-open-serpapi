@@ -1,0 +1,11 @@
+{
+  "engine": "startpage",
+  "output": "organic_results",
+  "result": "div.result",
+  "fields": [
+    { "name": "title",          "sel": "a.result-title",   "get": "text" },
+    { "name": "link",           "sel": "a.result-title",   "get": "@href" },
+    { "name": "displayed_link", "sel": "a.wgl-display-url", "get": "text" },
+    { "name": "snippet",        "sel": "p.description",     "get": "text" }
+  ]
+}

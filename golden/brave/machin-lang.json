@@ -1,0 +1,33 @@
+{
+  "search_metadata": {
+    "status": "Success",
+    "engine": "brave"
+  },
+  "search_parameters": {
+    "engine": "brave",
+    "q": ""
+  },
+  "organic_results": [
+    {
+      "position": 1,
+      "title": "Machine code - Wikipedia",
+      "link": "https://en.wikipedia.org/wiki/Machine_code",
+      "displayed_link": "en.wikipedia.org › wiki › Machine_code",
+      "snippet": "2 weeks ago - In computing, machine code is data ... its programmable interface. A computer program consists primarily of sequences of machine-code instructions. Machine code is classified as native with respect to its host CPU since it is the language that the CPU interprets directl..."
+    },
+    {
+      "position": 2,
+      "title": "What is Machine Language? - GeeksforGeeks",
+      "link": "https://www.geeksforgeeks.org/computer-organization-architecture/what-is-machine-language/",
+      "displayed_link": "geeksforgeeks.org › computer organization & architecture › what-is-machine-language",
+      "snippet": "23 July 2025 - Machine language is a low-level programming language that consists of binary bits i.e. only 0 and 1. The data present in binary form is the reason for its fast execution. In Machine language, instructions are directly executed by the CPU."
+    },
+    {
+      "position": 3,
+      "title": "Machine code (low level languages) - Programming Languages - Computer Science Field Guide",
+      "link": "https://www.csfieldguide.org.nz/en/chapters/programming-languages/machine-code/",
+      "displayed_link": "csfieldguide.org.nz › en › chapters › programming-languages › machine-code",
+      "snippet": "All computers have a machine code language (commonly referred to as an instruction set) that is used to tell the computer to put values into registers, to carry out arithmetic with the values in certain registers and put the result into another specified register like what we talked about above. Machine code also contains instructions for loading and saving values from memory (into or out of registers), jumping to a certain line in the program (that is either before or after the current line), or to jump to the line only if a certain condition is met (by doing a specified comparisons on values in registers)."
+    }
+  ]
+}
