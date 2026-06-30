@@ -35,9 +35,13 @@ Early but real. Two engines:
   entities, filters People-Also-Ask / internal links.
 - **`google_maps`** — raw record array → SerpApi `local_results[]`.
 
+Fetch is solved at the agent-first level too: `fetchers/google.sh` drives the
+Botasaurus anti-detect browser and **bypasses Google's CAPTCHA wall** (verified
+live — 12 organic results where curl/plain-puppeteer got only the CAPTCHA page).
+
 Roadmap: a small CSS-selector engine so engines become declarative (selector
-tables, no MFL), a server mode (`GET /search?...` mapping `engine → fetcher`),
-and a SQLite result cache.
+tables, no MFL), sturdier snippet/displayed_link extraction on live HTML, and a
+SQLite result cache. Staying CLI agent-first — no SerpApi-parity server.
 
 ## Quick start
 
@@ -51,6 +55,9 @@ MACHIN=~/ai/machin/machin ./build.sh   # against a local machin
 
 # end-to-end with a live fetcher plugin
 ./fetchers/google-maps.sh "coworking annecy" | ./open-serpapi parse --engine google_maps
+
+# Google, past the CAPTCHA wall (Botasaurus anti-detect browser — verified live)
+./fetchers/google.sh "machin programming language" | ./open-serpapi parse --engine google
 ```
 
 Output (SerpApi `google_maps` shape):

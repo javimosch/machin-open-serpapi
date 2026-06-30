@@ -32,20 +32,24 @@ proxy-backed crawler, or a cached file. Swap fetchers without touching the parse
 
 ## Included
 
-- **`google-search.js`** — Puppeteer fetcher for `engine=google`: renders the
-  SERP and dumps HTML. Run it with the browser install under `~/ai`:
+- **`google.sh`** → **`google-botasaurus.py`** — the **CAPTCHA-bypassing** fetcher
+  for `engine=google`. Drives [Botasaurus](https://github.com/omkarcloud/botasaurus)'
+  anti-detect, humanized Chrome, which gets past Google's "unusual traffic" wall.
+  **Verified:** 12 organic results from a live SERP where curl and plain headless
+  Chrome got only the CAPTCHA page.
   ```bash
-  NODE_PATH=~/ai/google-maps-scraper/node_modules \
-  PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome \
-  node fetchers/google-search.js "machin programming language" \
-    | ./open-serpapi parse --engine google
+  ./fetchers/google.sh "machin programming language" | ./open-serpapi parse --engine google
   ```
-- **`google-maps.sh`** — wraps the existing Puppeteer Maps scraper under `~/ai`
-  as a live smoke-test fetcher. Override the path with `MAPS_SCRAPER=...`.
+  Needs `pip install botasaurus` (already present via the supercli `botasaurus-cli`).
+- **`google-search.js`** — plain Puppeteer fetcher. Kept as a reference: from a
+  datacenter IP it gets **CAPTCHA-walled** (use it only where you have a clean
+  residential IP / logged-in session).
+- **`google-maps.sh`** — wraps the existing Puppeteer Maps scraper under `~/ai`.
+  Override the path with `MAPS_SCRAPER=...`.
 
-> **The layer-1 reality:** fetching Google from a datacenter IP gets a CAPTCHA /
-> "unusual traffic" wall — that's the proxy/anti-bot arms race open-serpapi
-> deliberately does **not** fight. A real deployment pairs the parser with a
-> fetcher that gets through (residential proxy, your own logged-in browser
-> session, a paid fetch API). The **parser** is what this project owns, and it's
-> tested offline against saved fixtures regardless of how you fetch.
+> **The layer-1 reality:** plain HTTP (curl, TLS-impersonation) and naive headless
+> browsers hit Google's CAPTCHA wall — that's the anti-bot arms race. open-serpapi
+> doesn't *fight* it in the parser; it makes fetch a plugin so you can drop in one
+> that wins. Botasaurus is a strong default; residential proxies or a logged-in
+> session also work. The **parser** is what this project owns, and it's tested
+> offline against saved fixtures regardless of how you fetch.
