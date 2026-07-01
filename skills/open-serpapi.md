@@ -1,6 +1,6 @@
 ---
 name: open-serpapi
-description: Use open-serpapi to turn raw search-engine HTML into clean JSON from the CLI. Covers the fetch→parse→schema model, building the binary, every engine (google, google_maps, duckduckgo, bing, startpage, brave, linkedin), output schemas, fetchers, adding a new engine, and testing. Read this first; for LinkedIn specifics see linkedin.md.
+description: Use open-serpapi to turn raw search-engine HTML into clean JSON from the CLI. Covers the fetch→parse→schema model, building the binary, every engine (google, google_maps, duckduckgo, bing, startpage, brave, linkedin), output schemas, fetchers, adding a new engine, and testing. Read this first. (LinkedIn fetching + the authed harvester live in a separate repo.)
 ---
 
 # open-serpapi
@@ -31,9 +31,8 @@ MACHIN=~/ai/machin/machin ./build.sh    # against a local machin compiler
 ./open-serpapi parse --engine google      < fixtures/google/machin-lang.raw.html
 ./open-serpapi parse --engine duckduckgo  < fixtures/duckduckgo/machin-lang.raw.html
 
-# end-to-end with a fetcher plugin:
-./fetchers/duckduckgo.sh "machin language" | ./open-serpapi parse --engine duckduckgo
-./fetchers/google.sh     "machin language" | ./open-serpapi parse --engine google
+# end-to-end: pipe any fetcher (a script that prints a page to stdout) into parse:
+<fetcher> "machin language" | ./open-serpapi parse --engine duckduckgo
 ```
 
 `--query "q"` sets `search_parameters.q` (some engines also recover it from the page).
@@ -48,7 +47,7 @@ MACHIN=~/ai/machin/machin ./build.sh    # against a local machin compiler
 | `startpage` | Startpage SERP HTML | `organic_results` | "" |
 | `brave` | Brave SERP HTML | `organic_results` | "" |
 | `google_maps` | raw record array (JSON) | `local_results` | title, rating, reviews, type, address, phone, website, gps_coordinates, place_id, maps_url |
-| `linkedin` | **authed** LinkedIn HTML | `posts` | author, author_url, author_type, text, hashtags, comments[] — **see linkedin.md** |
+| `linkedin` | **authed** LinkedIn HTML | `posts` | author, author_url, author_type, text, hashtags, comments[] — authed; fetch via a separate repo |
 
 `google` and `linkedin` are bespoke MFL parsers (irregular/obfuscated markup).
 `duckduckgo`/`bing`/`startpage`/`brave` are **declarative**: a JSON selector spec
@@ -69,15 +68,15 @@ in `engines/<name>.json` run by the CSS-selector engine (`src/css.src`).
 
 ## Fetchers (layer 1 — the plugin boundary)
 
-Any program that prints a page to stdout is a fetcher (`fetchers/README.md`):
+Any program that prints a page to stdout is a fetcher — see the contract in
+[`fetchers/README.md`](../fetchers/README.md). open-serpapi ships **no** fetchers;
+they're maintained separately so the binary stays network-free. Typical shapes:
 
-- `fetchers/<engine>.sh` — per-engine wrappers. `google/duckduckgo/bing/startpage/brave`
-  drive **Botasaurus** (anti-detect browser) which bypasses CAPTCHA/"unusual traffic"
-  walls. `duckduckgo` also works with plain `curl` from a clean IP.
-- `fetchers/render-botasaurus.py <url>` — generic anti-detect renderer.
-- `fetchers/google-maps.sh` → `~/ai/google-maps-scraper/gm-scraper.js` (generic, unfiltered
-  Maps scraper; emits name/rating/reviews/address/phone/website/place_id/lat/lng/maps_url).
-- `fetchers/linkedin.sh` — authed; prefers CDP-attach to your real browser. See linkedin.md.
+- anti-detect browser renderers (Botasaurus/Playwright) for `google/duckduckgo/bing/
+  startpage/brave` — get past CAPTCHA/"unusual traffic" walls.
+- a Google Maps scraper for `google_maps` (emits name/rating/reviews/address/phone/
+  website/place_id/lat/lng/maps_url).
+- an authed browser (CDP-attach to your own session) for `linkedin` — ToS-sensitive.
 
 For CI/tests, use the saved fixtures (no network).
 
@@ -112,4 +111,4 @@ deterministic and offline; live scrapers only run to refresh them when markup dr
 
 - Google `snippet` is empty for `#:~:text=` highlight results (Google ships none).
 - Search markup drifts; the corpus is the spec — refresh fixtures, don't chase live HTML.
-- `linkedin` is authed and ToS-sensitive — read linkedin.md before using it.
+- `linkedin` is authed and ToS-sensitive — the fetcher/harvester lives in a separate (private) repo.

@@ -4,7 +4,7 @@ A spec-driven engine is **just a JSON file** — no MFL, no recompile. Drop
 `engines/<name>.json`, point a fetcher at the right URL, and run:
 
 ```bash
-./fetchers/<name>.sh "query" | ./open-serpapi parse --engine <name>
+<fetcher> "query" | ./open-serpapi parse --engine <name>
 # or with an explicit spec file:
 ... | ./open-serpapi parse --engine <name> --spec path/to/spec.json
 ```
@@ -63,9 +63,9 @@ panel that shares `div.result` but has no `a.result-title`.
 ## Adding an engine
 
 1. Write `engines/<name>.json` against the target's stable classes.
-2. Add `fetchers/<name>.sh` that emits the rendered HTML (reuse
-   `render-botasaurus.py <url>` to get past bot walls).
-3. Capture a fixture: `./fetchers/<name>.sh "q" > fixtures/<name>/<case>.raw.html`,
+2. Point a fetcher (an anti-detect browser renderer) at the target's URL to emit
+   rendered HTML on stdout.
+3. Capture a fixture: `<fetcher> "q" > fixtures/<name>/<case>.raw.html`,
    then freeze a golden and add it to the offline suite (`./test.sh`).
 
 Bespoke engines (`google`, `google_maps`) stay hand-written in MFL where the

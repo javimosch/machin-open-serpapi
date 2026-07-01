@@ -42,7 +42,7 @@
         <p class="text-white/40 text-sm uppercase tracking-widest mb-3">The whole idea</p>
         <div class="term rounded-xl p-5 overflow-x-auto">
 <pre class="text-sm leading-relaxed"><span class="text-white/40"># fetch is a plugin — any program that prints a page to stdout</span>
-<span class="text-emerald-300">./fetchers/google.sh</span> <span class="text-amber-200">"machin programming language"</span> <span class="text-white/40">|</span> <span class="text-sky-300">./open-serpapi parse --engine google</span>
+<span class="text-emerald-300">&lt;fetcher&gt;</span> <span class="text-amber-200">"machin programming language"</span> <span class="text-white/40">|</span> <span class="text-sky-300">./open-serpapi parse --engine google</span>
 
 <span class="text-white/40">{ "organic_results": [ { "position": 1, "title": "...", "link": "...",</span>
 <span class="text-white/40">                        "displayed_link": "...", "snippet": "..." }, ... ] }</span></pre>
@@ -90,7 +90,7 @@
 ./open-serpapi parse --engine google &lt; fixtures/google/machin-lang.raw.html
 
 <span class="text-white/40"># add a search engine = drop a JSON file in engines/, no recompile</span>
-./fetchers/duckduckgo.sh <span class="text-amber-200">"query"</span> | ./open-serpapi parse --engine duckduckgo</pre>
+&lt;fetcher&gt; <span class="text-amber-200">"query"</span> | ./open-serpapi parse --engine duckduckgo</pre>
         </div>
       </section>
 

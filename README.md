@@ -56,14 +56,14 @@ Early but real. Seven engines:
   comment via `comments-comment-meta__description-title` + `__main-content`).
   Each post: `author`, `author_url`, `author_type`, `text`, `hashtags`; each
   comment: `author`, `author_url`, `headline`, `text`. Verified on real logged-in
-  HTML — 18/18 comments. Best driven by **attaching to your own browser over CDP**
-  (see [`fetchers/`](fetchers/README.md)); li_at-cookie injection works for search
-  but the comment pages need the real session. **Scraping logged-in LinkedIn
+  HTML — 18/18 comments. Best driven by attaching to your own browser over CDP;
+  see the [fetcher contract](fetchers/README.md). **Scraping logged-in LinkedIn
   violates their ToS and risks your account; personal, low-volume use only.**
 
-Fetch is solved at the agent-first level too: `fetchers/google.sh` drives the
-Botasaurus anti-detect browser and **bypasses Google's CAPTCHA wall** (verified
-live — 12 organic results where curl/plain-puppeteer got only the CAPTCHA page).
+Fetch stays out of scope by design — it's a [plugin](fetchers/README.md). An
+anti-detect browser fetcher gets past CAPTCHA walls (verified live — 12 Google
+organic results where curl/plain-puppeteer got only the CAPTCHA page); such
+reference fetchers are maintained separately so the binary stays network-free.
 
 > Snippets come back empty for `#:~:text=` highlight-style results — Google
 > doesn't ship a snippet block for those in the server HTML (confirmed with a
@@ -82,17 +82,10 @@ MACHIN=~/ai/machin/machin ./build.sh   # against a local machin
 ./open-serpapi parse --engine google      < fixtures/google/machin-lang.raw.html
 ./open-serpapi parse --engine google_maps < fixtures/google_maps/coworking-annecy.raw.json
 
-# end-to-end with a live fetcher plugin
-./fetchers/google-maps.sh "coworking annecy" | ./open-serpapi parse --engine google_maps
-
-# Google, past the CAPTCHA wall (Botasaurus anti-detect browser — verified live)
-./fetchers/google.sh "machin programming language" | ./open-serpapi parse --engine google
-
-# DuckDuckGo / Bing — engines defined entirely by engines/*.json, no MFL
-./fetchers/duckduckgo.sh "machin programming language" | ./open-serpapi parse --engine duckduckgo
-./fetchers/bing.sh       "machin programming language" | ./open-serpapi parse --engine bing
-./fetchers/startpage.sh  "machin programming language" | ./open-serpapi parse --engine startpage
-./fetchers/brave.sh      "machin programming language" | ./open-serpapi parse --engine brave
+# end-to-end: pipe ANY fetcher (a script that prints a page to stdout) into parse
+<fetcher> "coworking annecy"          | ./open-serpapi parse --engine google_maps
+<fetcher> "machin programming language" | ./open-serpapi parse --engine google
+<fetcher> "machin programming language" | ./open-serpapi parse --engine duckduckgo   # or bing/startpage/brave
 ```
 
 Output (SerpApi `google_maps` shape):
@@ -130,7 +123,7 @@ src/css.src         # HTML -> DOM + CSS-selector engine + spec runner + linkedin
 skills/             # agent-loadable how-to guides (open-serpapi.md, linkedin.md)
 engines/<name>.json # declarative spec-driven engines (e.g. duckduckgo) + how-to
 build.sh            # encode src/*.src -> .mfl -> native binary
-fetchers/           # layer-1 plugins (the pipe boundary) + the contract
+fetchers/README.md  # the layer-1 plugin contract (fetchers maintained separately)
 fixtures/<engine>/  # frozen raw fetcher output (parser input)
 golden/<engine>/    # expected output (parser spec)
 test.sh             # run fixtures through the parser, diff goldens
