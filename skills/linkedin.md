@@ -66,6 +66,24 @@ DISPLAY=:0 setsid microsoft-edge --remote-debugging-port=9222 \
 Fallback (no debug port): set a `li_at` cookie in `~/.config/intrane-gtm/li_at`
 (chmod 600) or `$LI_AT`. Good for content-search; comment pages may be blocked.
 
+**C. Hidden / no-focus mode (recommended for batch harvests).** Attaching to your
+*visible* Edge opens tabs that steal window focus. Instead run a **hidden authed
+Edge on a virtual display** — headful (so clipboard/interaction/anti-bot behave
+identically) but invisible, so it never touches your screen:
+
+```bash
+./fetchers/linkedin-hidden-edge.sh          # Xvfb :99 + a 2nd Edge on CDP :9223,
+                                            #   your full cookie jar injected (via
+                                            #   raw CDP Storage.get/setCookies — incl li_at)
+CDP_URL=http://localhost:9223 DISPLAY=:99 \
+  ./fetchers/linkedin-search-threads.sh "CTO de transition" 3
+```
+
+It refreshes cookies from your visible Edge (:9222) if running, else uses the saved
+`~/.config/intrane-gtm/li-cookies.json`. Your real browser is untouched (separate
+`--user-data-dir=/tmp/edge-auto`). Note: **Playwright's `context.cookies()` drops
+httpOnly cookies (li_at) — you must use raw CDP `Storage.getCookies`/`setCookies`.**
+
 ## Output schema
 
 ```json
