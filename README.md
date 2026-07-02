@@ -120,7 +120,7 @@ to *refresh* fixtures when a SERP's HTML drifts.
 ```
 src/serpapi.src     # core: bespoke parsers (google, google_maps) + schema + CLI
 src/css.src         # HTML -> DOM + CSS-selector engine + spec runner + linkedin
-skills/             # agent-loadable how-to guides (open-serpapi.md, linkedin.md)
+skills/             # agent-loadable how-to guide (open-serpapi.md)
 engines/<name>.json # declarative spec-driven engines (e.g. duckduckgo) + how-to
 build.sh            # encode src/*.src -> .mfl -> native binary
 fetchers/README.md  # the layer-1 plugin contract (fetchers maintained separately)
@@ -131,10 +131,22 @@ test.sh             # run fixtures through the parser, diff goldens
 
 ## Agent skills
 
-Self-contained, in-repo guides for agents driving open-serpapi — [`skills/`](skills/):
-[`open-serpapi.md`](skills/open-serpapi.md) (the model, engines, schemas, adding an
-engine, testing) and [`linkedin.md`](skills/linkedin.md) (authed posts + comments,
-CDP attach, the capability map). The repo is self-documenting for any agent that clones it.
+A self-contained, in-repo guide for agents driving open-serpapi —
+[`skills/open-serpapi.md`](skills/open-serpapi.md) (the model, engines, schemas, adding an
+engine, testing). The repo is self-documenting for any agent that clones it.
+
+> **Fetchers live separately.** open-serpapi is pure parse + schema and never touches the
+> network — layer-1 fetchers (web renderers, the authed LinkedIn/Reddit harvesters) are a
+> swappable plugin, maintained outside this repo. See [`fetchers/README.md`](fetchers/README.md)
+> for the contract.
+
+## Hosted: grepapi
+
+Don't want to run the fetchers yourself? **[grepapi](https://grepapi.intrane.fr)** is the
+agent-first cloud built on open-serpapi: point it at an ICP and get ranked, deduped leads
+(real companies with phones, warm LinkedIn/Reddit leads) — each with a brief your own LLM
+turns into outreach. CLI-first, **free tier**, you bring the browser + the LLM.
+→ **<https://grepapi.intrane.fr>**
 
 ## License
 
