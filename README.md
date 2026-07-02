@@ -140,13 +140,21 @@ engine, testing). The repo is self-documenting for any agent that clones it.
 > swappable plugin, maintained outside this repo. See [`fetchers/README.md`](fetchers/README.md)
 > for the contract.
 
-## Hosted: grepapi
+## grepapi — the agent-first cloud on top
 
-Don't want to run the fetchers yourself? **[grepapi](https://grepapi.intrane.fr)** is the
-agent-first cloud built on open-serpapi: point it at an ICP and get ranked, deduped leads
-(real companies with phones, warm LinkedIn/Reddit leads) — each with a brief your own LLM
-turns into outreach. CLI-first, **free tier**, you bring the browser + the LLM.
-→ **<https://grepapi.intrane.fr>**
+open-serpapi (the parser) + your own fetchers are **layer 1**.
+**[grepapi](https://grepapi.intrane.fr)** is the brains on top — a **fat-client /
+thin-server** control plane. You still run the fetchers **yourself** (BYO-browser, from
+your own session — no proxy bill), and an **agentic onboarding** walks your agent/operator
+through the setup. grepapi adds everything *above* the raw fetch:
+
+- **Planner** — one ICP → the right queries per engine (web · Maps · Reddit · authed LinkedIn).
+- **Scoring · qualification · cross-account dedup** — a data graph that kills job-boards & directories and de-dupes people and companies across runs.
+- **Briefs + actions** — every lead ranked with the action to take (call · comment · reply · research) and a brief your own LLM turns into outreach (**BYO-LLM** — no token markup).
+- **Workflow** — status, notes, retention, usage & billing.
+
+CLI-first, agent-native (JSON + typed exit codes), **free tier**. You bring the browser and
+the LLM; grepapi sells the brains, not the commodities. → **<https://grepapi.intrane.fr>**
 
 ## License
 
