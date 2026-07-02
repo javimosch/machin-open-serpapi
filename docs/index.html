@@ -33,6 +33,7 @@
         </p>
         <div class="mt-8 flex flex-wrap gap-3">
           <a href="https://github.com/javimosch/machin-open-serpapi" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-blue-500 text-white font-medium text-sm hover:bg-blue-400 transition">GitHub <span class="text-[10px]">↗</span></a>
+          <a href="https://grepapi.intrane.fr" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-500 text-black font-semibold text-sm hover:bg-emerald-400 transition">grepapi cloud <span class="text-[10px]">↗</span></a>
           <a href="changelog.html" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full pill text-white/60 font-medium text-sm hover:text-white/90 transition">Changelog <span class="text-[10px]">→</span></a>
         </div>
       </header>
@@ -94,8 +95,31 @@
         </div>
       </section>
 
+      <!-- grepapi -->
+      <section class="mt-16">
+        <p class="text-white/40 text-sm uppercase tracking-widest mb-3">Want the brains on top?</p>
+        <div class="card rounded-xl p-6" style="border-color:#10b98155">
+          <div class="flex items-center gap-3 mb-2">
+            <h3 class="text-xl font-bold text-white">grepapi</h3>
+            <span class="text-xs font-medium text-emerald-300/80 pill rounded-full px-3 py-1" style="border-color:#10b98140">hosted · free tier</span>
+          </div>
+          <p class="text-white/50 text-sm leading-relaxed max-w-3xl">
+            open-serpapi + your own fetchers are <span class="text-white/70">layer 1</span>.
+            <a class="text-emerald-300 hover:text-emerald-200" href="https://grepapi.intrane.fr">grepapi</a>
+            is the agent-first cloud on top — <span class="text-white/70">fat-client / thin-server</span>. You still run the
+            fetchers <span class="text-white/70">yourself</span> (BYO-browser, from your own session — no proxy bill), with an
+            <span class="text-white/70">agentic onboarding</span> that sets your agent/operator up. grepapi adds everything above the raw fetch:
+            the <span class="text-white/70">planner</span> (one ICP → the right queries per engine — web · Maps · Reddit · authed LinkedIn),
+            <span class="text-white/70">scoring, qualification &amp; a cross-account dedup graph</span>, ranked leads each with an action
+            (call · comment · reply · research) and a <span class="text-white/70">brief your own LLM turns into outreach</span> (BYO-LLM — no token markup),
+            plus workflow &amp; billing. It sells the brains, not the commodities.
+          </p>
+          <a href="https://grepapi.intrane.fr" class="inline-flex items-center gap-2 mt-4 px-5 py-2.5 rounded-full bg-emerald-500 text-black font-semibold text-sm hover:bg-emerald-400 transition">Try grepapi <span class="text-[10px]">↗</span></a>
+        </div>
+      </section>
+
       <footer class="mt-20 pt-8 border-t border-white/5 text-white/30 text-sm flex flex-wrap items-center justify-between gap-3">
-        <span>open-serpapi · MIT · built in <a class="text-white/50 hover:text-white/80" href="https://github.com/javimosch/machin">machin</a></span>
+        <span>open-serpapi · MIT · built in <a class="text-white/50 hover:text-white/80" href="https://github.com/javimosch/machin">machin</a> · hosted: <a class="text-emerald-300/70 hover:text-emerald-200" href="https://grepapi.intrane.fr">grepapi</a></span>
         <span><a class="text-white/50 hover:text-white/80" href="https://github.com/javimosch/machin-open-serpapi">github.com/javimosch/machin-open-serpapi</a></span>
       </footer>
 
